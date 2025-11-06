@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -23,7 +24,7 @@ public class PatientDTO {
     private Integer age; // Calculado
     private String gender; // MALE, FEMALE
     private String color;
-    private Double weight;
+    private BigDecimal weight;
     private String microchipNumber;
     private String allergies;
     private String medicalHistory;

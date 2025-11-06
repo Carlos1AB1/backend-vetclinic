@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -44,7 +45,7 @@ public class Patient {
     private String color;
 
     @Column(precision = 5, scale = 2)
-    private Double weight; // en kg
+    private BigDecimal weight; // en kg
 
     @Column(name = "microchip_number", length = 50, unique = true)
     private String microchipNumber;
