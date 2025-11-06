@@ -26,7 +26,7 @@ import java.util.List;
  * Implementa patrón Controller de Spring MVC
  */
 @RestController
-@RequestMapping("/api/patients")
+@RequestMapping("/patients")
 @RequiredArgsConstructor
 @Tag(name = "Patients", description = "API para la gestión de pacientes (mascotas)")
 @SecurityRequirement(name = "bearerAuth")
@@ -47,14 +47,21 @@ public class PatientController {
     }
 
     /**
-     * Obtener todos los pacientes activos
+     * Obtener todos los pacientes activos con paginación
      */
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST')")
-    @Operation(summary = "Listar pacientes", description = "Obtiene la lista de todos los pacientes activos")
-    public ResponseEntity<ApiResponse<List<PatientDTO>>> getAllPatients() {
-        List<PatientDTO> patients = patientService.getAllPatients();
-        return ResponseEntity.ok(ApiResponse.success(patients));
+    @Operation(summary = "Listar pacientes", description = "Obtiene la lista de pacientes con paginación")
+    public ResponseEntity<ApiResponse<Page<PatientDTO>>> getAllPatients(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection
+    ) {
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Page<PatientDTO> patientsPage = patientService.getPatientsPage(pageable);
+        return ResponseEntity.ok(ApiResponse.success(patientsPage));
     }
 
     /**

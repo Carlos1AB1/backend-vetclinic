@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
@@ -35,7 +36,7 @@ public class UpdatePatientRequest {
 
     @DecimalMin(value = "0.01", message = "El peso debe ser mayor a 0")
     @DecimalMax(value = "999.99", message = "El peso no puede exceder 999.99 kg")
-    private Double weight;
+    private BigDecimal weight;
 
     @Size(max = 50, message = "El número de microchip no puede exceder 50 caracteres")
     private String microchipNumber;
