@@ -48,7 +48,7 @@ public class PatientService {
         patient.setName(request.getName());
         patient.setSpecies(request.getSpecies());
         patient.setBreed(request.getBreed());
-        patient.setDateOfBirth(request.getDateOfBirth());
+        patient.setBirthDate(request.getBirthDate());
         patient.setGender(request.getGender());
         patient.setColor(request.getColor());
         patient.setWeight(request.getWeight());
@@ -120,7 +120,7 @@ public class PatientService {
         if (request.getName() != null) patient.setName(request.getName());
         if (request.getSpecies() != null) patient.setSpecies(request.getSpecies());
         if (request.getBreed() != null) patient.setBreed(request.getBreed());
-        if (request.getDateOfBirth() != null) patient.setDateOfBirth(request.getDateOfBirth());
+        if (request.getBirthDate() != null) patient.setBirthDate(request.getBirthDate());
         if (request.getGender() != null) patient.setGender(request.getGender());
         if (request.getColor() != null) patient.setColor(request.getColor());
         if (request.getWeight() != null) patient.setWeight(request.getWeight());
@@ -202,7 +202,7 @@ public class PatientService {
         dto.setName(patient.getName());
         dto.setSpecies(patient.getSpecies());
         dto.setBreed(patient.getBreed());
-        dto.setDateOfBirth(patient.getDateOfBirth());
+        dto.setBirthDate(patient.getBirthDate());
         dto.setAge(patient.getAge()); // Calcula la edad
         dto.setGender(patient.getGender());
         dto.setColor(patient.getColor());
@@ -213,6 +213,7 @@ public class PatientService {
         dto.setIsActive(patient.getIsActive());
         dto.setNotes(patient.getNotes());
         dto.setOwnerId(patient.getOwnerId());
+        dto.setOwnerName(null); // Se poblará cuando se integre el módulo de owners
         dto.setCreatedAt(patient.getCreatedAt());
         dto.setUpdatedAt(patient.getUpdatedAt());
         return dto;

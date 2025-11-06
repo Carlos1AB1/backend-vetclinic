@@ -25,9 +25,9 @@ public class UpdatePatientRequest {
     private String breed;
 
     @Past(message = "La fecha de nacimiento debe ser en el pasado")
-    private LocalDate dateOfBirth;
+    private LocalDate birthDate;
 
-    @Pattern(regexp = "^(Macho|Hembra|Desconocido)$", message = "El género debe ser: Macho, Hembra o Desconocido")
+    @Pattern(regexp = "^(MALE|FEMALE)$", message = "El género debe ser: MALE o FEMALE")
     private String gender;
 
     @Size(max = 20, message = "El color no puede exceder 20 caracteres")
