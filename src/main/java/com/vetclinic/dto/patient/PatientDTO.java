@@ -1,0 +1,35 @@
+package com.vetclinic.dto.patient;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+/**
+ * DTO para la respuesta de pacientes
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class PatientDTO {
+
+    private Long id;
+    private String name;
+    private String species;
+    private String breed;
+    private LocalDate dateOfBirth;
+    private Integer age; // Calculado
+    private String gender;
+    private String color;
+    private Double weight;
+    private String microchipNumber;
+    private String allergies;
+    private String medicalHistory;
+    private Boolean isActive;
+    private String notes;
+    private Long ownerId;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+}
