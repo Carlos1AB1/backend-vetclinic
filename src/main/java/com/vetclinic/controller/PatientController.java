@@ -40,9 +40,10 @@ public class PatientController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST')")
     @Operation(summary = "Crear paciente", description = "Crea un nuevo paciente en el sistema")
-    public ResponseEntity<PatientDTO> createPatient(@Valid @RequestBody CreatePatientRequest request) {
+    public ResponseEntity<ApiResponse<PatientDTO>> createPatient(@Valid @RequestBody CreatePatientRequest request) {
         PatientDTO patient = patientService.createPatient(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(patient);
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(ApiResponse.success(patient));
     }
 
     /**
@@ -51,9 +52,9 @@ public class PatientController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST')")
     @Operation(summary = "Listar pacientes", description = "Obtiene la lista de todos los pacientes activos")
-    public ResponseEntity<List<PatientDTO>> getAllPatients() {
+    public ResponseEntity<ApiResponse<List<PatientDTO>>> getAllPatients() {
         List<PatientDTO> patients = patientService.getAllPatients();
-        return ResponseEntity.ok(patients);
+        return ResponseEntity.ok(ApiResponse.success(patients));
     }
 
     /**
@@ -62,7 +63,7 @@ public class PatientController {
     @GetMapping("/page")
     @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST')")
     @Operation(summary = "Listar pacientes paginado", description = "Obtiene pacientes con paginación y ordenamiento")
-    public ResponseEntity<Page<PatientDTO>> getPatientsPage(
+    public ResponseEntity<ApiResponse<Page<PatientDTO>>> getPatientsPage(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
@@ -71,7 +72,7 @@ public class PatientController {
         Sort.Direction direction = sortDirection.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         Page<PatientDTO> patientsPage = patientService.getPatientsPage(pageable);
-        return ResponseEntity.ok(patientsPage);
+        return ResponseEntity.ok(ApiResponse.success(patientsPage));
     }
 
     /**
@@ -80,9 +81,9 @@ public class PatientController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST')")
     @Operation(summary = "Obtener paciente", description = "Obtiene un paciente específico por su ID")
-    public ResponseEntity<PatientDTO> getPatientById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<PatientDTO>> getPatientById(@PathVariable Long id) {
         PatientDTO patient = patientService.getPatientById(id);
-        return ResponseEntity.ok(patient);
+        return ResponseEntity.ok(ApiResponse.success(patient));
     }
 
     /**
@@ -91,12 +92,12 @@ public class PatientController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN')")
     @Operation(summary = "Actualizar paciente", description = "Actualiza la información de un paciente existente")
-    public ResponseEntity<PatientDTO> updatePatient(
+    public ResponseEntity<ApiResponse<PatientDTO>> updatePatient(
             @PathVariable Long id,
             @Valid @RequestBody UpdatePatientRequest request
     ) {
         PatientDTO updatedPatient = patientService.updatePatient(id, request);
-        return ResponseEntity.ok(updatedPatient);
+        return ResponseEntity.ok(ApiResponse.success(updatedPatient));
     }
 
     /**
@@ -105,9 +106,12 @@ public class PatientController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Eliminar paciente", description = "Desactiva un paciente del sistema")
-    public ResponseEntity<ApiResponse> deletePatient(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deletePatient(@PathVariable Long id) {
         patientService.deletePatient(id);
-        return ResponseEntity.ok(new ApiResponse(true, "Paciente eliminado exitosamente"));
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+            .success(true)
+            .message("Paciente eliminado exitosamente")
+            .build());
     }
 
     /**
@@ -116,9 +120,9 @@ public class PatientController {
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST')")
     @Operation(summary = "Buscar pacientes", description = "Busca pacientes por nombre")
-    public ResponseEntity<List<PatientDTO>> searchPatients(@RequestParam String name) {
+    public ResponseEntity<ApiResponse<List<PatientDTO>>> searchPatients(@RequestParam String name) {
         List<PatientDTO> patients = patientService.searchPatientsByName(name);
-        return ResponseEntity.ok(patients);
+        return ResponseEntity.ok(ApiResponse.success(patients));
     }
 
     /**
@@ -127,9 +131,9 @@ public class PatientController {
     @GetMapping("/owner/{ownerId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST')")
     @Operation(summary = "Pacientes por propietario", description = "Obtiene todos los pacientes de un propietario")
-    public ResponseEntity<List<PatientDTO>> getPatientsByOwner(@PathVariable Long ownerId) {
+    public ResponseEntity<ApiResponse<List<PatientDTO>>> getPatientsByOwner(@PathVariable Long ownerId) {
         List<PatientDTO> patients = patientService.getPatientsByOwner(ownerId);
-        return ResponseEntity.ok(patients);
+        return ResponseEntity.ok(ApiResponse.success(patients));
     }
 
     /**
@@ -138,9 +142,9 @@ public class PatientController {
     @GetMapping("/species/{species}")
     @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST')")
     @Operation(summary = "Pacientes por especie", description = "Obtiene pacientes filtrados por especie")
-    public ResponseEntity<List<PatientDTO>> getPatientsBySpecies(@PathVariable String species) {
+    public ResponseEntity<ApiResponse<List<PatientDTO>>> getPatientsBySpecies(@PathVariable String species) {
         List<PatientDTO> patients = patientService.getPatientsBySpecies(species);
-        return ResponseEntity.ok(patients);
+        return ResponseEntity.ok(ApiResponse.success(patients));
     }
 
     /**
@@ -149,8 +153,8 @@ public class PatientController {
     @GetMapping("/count")
     @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN')")
     @Operation(summary = "Contar pacientes", description = "Obtiene el total de pacientes activos")
-    public ResponseEntity<Long> countActivePatients() {
+    public ResponseEntity<ApiResponse<Long>> countActivePatients() {
         long count = patientService.countActivePatients();
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(ApiResponse.success(count));
     }
 }

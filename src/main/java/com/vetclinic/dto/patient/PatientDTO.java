@@ -19,9 +19,9 @@ public class PatientDTO {
     private String name;
     private String species;
     private String breed;
-    private LocalDate dateOfBirth;
+    private LocalDate birthDate;
     private Integer age; // Calculado
-    private String gender;
+    private String gender; // MALE, FEMALE
     private String color;
     private Double weight;
     private String microchipNumber;
@@ -30,6 +30,7 @@ public class PatientDTO {
     private Boolean isActive;
     private String notes;
     private Long ownerId;
+    private String ownerName; // Se puede poblar cuando se integre el módulo de owners
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

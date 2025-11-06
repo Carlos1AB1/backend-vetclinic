@@ -34,11 +34,11 @@ public class Patient {
     @Column(length = 50)
     private String breed; // Raza
 
-    @Column(name = "date_of_birth")
-    private LocalDate dateOfBirth;
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
 
     @Column(length = 20)
-    private String gender; // Macho, Hembra
+    private String gender; // MALE, FEMALE
 
     @Column(length = 20)
     private String color;
@@ -78,9 +78,9 @@ public class Patient {
      */
     @Transient
     public Integer getAge() {
-        if (dateOfBirth == null) {
+        if (birthDate == null) {
             return null;
         }
-        return LocalDate.now().getYear() - dateOfBirth.getYear();
+        return LocalDate.now().getYear() - birthDate.getYear();
     }
 }
