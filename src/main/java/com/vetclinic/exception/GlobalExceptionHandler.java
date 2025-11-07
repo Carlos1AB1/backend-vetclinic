@@ -70,6 +70,17 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(
+            BusinessException ex,
+            WebRequest request
+    ) {
+        log.error("Business logic error: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
     @ExceptionHandler(TokenExpiredException.class)
     public ResponseEntity<ApiResponse<Void>> handleTokenExpiredException(
             TokenExpiredException ex,

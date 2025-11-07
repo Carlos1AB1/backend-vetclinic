@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
  * Handles dashboard statistics and metrics
  */
 @RestController
-@RequestMapping("/api/dashboard")
+@RequestMapping("/dashboard")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class DashboardController {
