@@ -3,9 +3,11 @@ package com.vetclinic.service;
 import com.vetclinic.dto.patient.CreatePatientRequest;
 import com.vetclinic.dto.patient.PatientDTO;
 import com.vetclinic.dto.patient.UpdatePatientRequest;
+import com.vetclinic.entity.Owner;
 import com.vetclinic.entity.Patient;
 import com.vetclinic.exception.DuplicateResourceException;
 import com.vetclinic.exception.ResourceNotFoundException;
+import com.vetclinic.repository.OwnerRepository;
 import com.vetclinic.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,12 +30,21 @@ import java.util.stream.Collectors;
 public class PatientService {
 
     private final PatientRepository patientRepository;
+    private final OwnerRepository ownerRepository;
 
     /**
      * Crear un nuevo paciente
      */
     public PatientDTO createPatient(CreatePatientRequest request) {
         log.info("Creando nuevo paciente: {}", request.getName());
+
+        // Validar que el propietario existe
+        Owner owner = ownerRepository.findById(request.getOwnerId())
+            .orElseThrow(() -> new ResourceNotFoundException("Propietario no encontrado con ID: " + request.getOwnerId()));
+        
+        if (!owner.getIsActive()) {
+            throw new ResourceNotFoundException("El propietario no está activo");
+        }
 
         // Validar microchip único si se proporciona
         if (request.getMicrochipNumber() != null && !request.getMicrochipNumber().isBlank()) {
@@ -56,7 +67,7 @@ public class PatientService {
         patient.setAllergies(request.getAllergies());
         patient.setMedicalHistory(request.getMedicalHistory());
         patient.setNotes(request.getNotes());
-        patient.setOwnerId(request.getOwnerId());
+        patient.setOwner(owner);
         patient.setIsActive(true);
 
         Patient savedPatient = patientRepository.save(patient);
@@ -129,7 +140,18 @@ public class PatientService {
         if (request.getMedicalHistory() != null) patient.setMedicalHistory(request.getMedicalHistory());
         if (request.getIsActive() != null) patient.setIsActive(request.getIsActive());
         if (request.getNotes() != null) patient.setNotes(request.getNotes());
-        if (request.getOwnerId() != null) patient.setOwnerId(request.getOwnerId());
+        
+        // Actualizar propietario si cambió
+        if (request.getOwnerId() != null) {
+            Owner newOwner = ownerRepository.findById(request.getOwnerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Propietario no encontrado con ID: " + request.getOwnerId()));
+            
+            if (!newOwner.getIsActive()) {
+                throw new ResourceNotFoundException("El propietario no está activo");
+            }
+            
+            patient.setOwner(newOwner);
+        }
 
         Patient updatedPatient = patientRepository.save(patient);
         log.info("Paciente actualizado exitosamente: {}", updatedPatient.getId());
@@ -212,8 +234,20 @@ public class PatientService {
         dto.setMedicalHistory(patient.getMedicalHistory());
         dto.setIsActive(patient.getIsActive());
         dto.setNotes(patient.getNotes());
-        dto.setOwnerId(patient.getOwnerId());
-        dto.setOwnerName(null); // Se poblará cuando se integre el módulo de owners
+        
+        // Mapear información del propietario
+        try {
+            if (patient.getOwner() != null) {
+                dto.setOwnerId(patient.getOwner().getId());
+                dto.setOwnerName(patient.getOwner().getFullName());
+            }
+        } catch (Exception e) {
+            // Si hay error al acceder al owner (lazy loading o entity no encontrada)
+            log.warn("No se pudo cargar el propietario del paciente ID {}: {}", patient.getId(), e.getMessage());
+            dto.setOwnerId(null);
+            dto.setOwnerName("Propietario no disponible");
+        }
+        
         dto.setCreatedAt(patient.getCreatedAt());
         dto.setUpdatedAt(patient.getUpdatedAt());
         return dto;

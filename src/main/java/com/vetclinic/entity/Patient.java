@@ -62,9 +62,10 @@ public class Patient {
     @Column(length = 500)
     private String notes; // Notas adicionales
 
-    // Relación con el propietario (Owner) - se implementará en el módulo de owners
-    @Column(name = "owner_id")
-    private Long ownerId;
+    // Relación con el propietario (Owner)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private Owner owner;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
