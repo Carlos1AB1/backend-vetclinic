@@ -39,28 +39,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
 
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                String username = tokenProvider.getUsernameFromToken(jwt);
+            if (StringUtils.hasText(jwt)) {
+                try {
+                    if (tokenProvider.validateToken(jwt)) {
+                        String username = tokenProvider.getUsernameFromToken(jwt);
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                        
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(
+                                        userDetails,
+                                        null,
+                                        userDetails.getAuthorities()
+                                );
+                        
+                        authentication.setDetails(
+                                new WebAuthenticationDetailsSource().buildDetails(request)
                         );
-                
-                authentication.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                
-                log.debug("Set authentication for user: {}", username);
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        
+                        log.debug("Set authentication for user: {}", username);
+                    }
+                } catch (Exception tokenEx) {
+                    log.warn("Invalid or expired token: {}", tokenEx.getMessage());
+                    // Don't set authentication, let Spring Security handle it
+                }
             }
         } catch (Exception ex) {
             log.error("Could not set user authentication in security context", ex);
+            // Don't propagate exception, let Spring Security handle authentication failure
         }
 
         filterChain.doFilter(request, response);

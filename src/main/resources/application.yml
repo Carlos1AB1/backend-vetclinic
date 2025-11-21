@@ -104,6 +104,8 @@ app:
   name: VetClinic Pro
   version: 1.0.0
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  backend-url: ${BACKEND_URL:http://localhost:8081}
   password-reset-token-expiration: 3600000 # 1 hour
+  appointment-action-token-expiration: 172800000 # 48 hours (2 days)
   max-login-attempts: 5
   account-lock-duration: 900000 # 15 minutes
