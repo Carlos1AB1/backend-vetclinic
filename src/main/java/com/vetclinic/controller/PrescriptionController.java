@@ -4,6 +4,7 @@ import com.vetclinic.dto.ApiResponse;
 import com.vetclinic.dto.prescription.CreatePrescriptionRequest;
 import com.vetclinic.dto.prescription.PrescriptionDTO;
 import com.vetclinic.dto.prescription.UpdatePrescriptionRequest;
+import com.vetclinic.service.PrescriptionExportService;
 import com.vetclinic.service.PrescriptionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,11 +13,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 /**
@@ -30,6 +34,7 @@ import java.util.List;
 public class PrescriptionController {
 
     private final PrescriptionService prescriptionService;
+    private final PrescriptionExportService prescriptionExportService;
 
     /**
      * Crear una nueva prescripción
@@ -181,5 +186,34 @@ public class PrescriptionController {
         log.info("GET /api/prescriptions/count - Contando prescripciones activas");
         long count = prescriptionService.countActivePrescriptions();
         return ResponseEntity.ok(ApiResponse.success("Conteo realizado exitosamente", count));
+    }
+
+    /**
+     * Exportar receta en formato PDF o Excel
+     * GET /api/prescriptions/{id}/export?format=PDF
+     * RF014 - Generación de Recetas
+     */
+    @GetMapping("/{id}/export")
+    @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST')")
+    public ResponseEntity<byte[]> exportPrescription(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "PDF") String format) {
+        
+        log.info("GET /api/prescriptions/{}/export - Formato: {}", id, format);
+        
+        // Usar Factory Method Pattern para exportar en el formato solicitado
+        ByteArrayOutputStream outputStream = prescriptionExportService.exportPrescription(id, format);
+        
+        String fileExtension = prescriptionExportService.getFileExtension(format);
+        String mimeType = prescriptionExportService.getMimeType(format);
+        String filename = "receta_" + id + fileExtension;
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(mimeType));
+        headers.setContentDispositionFormData("attachment", filename);
+        
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(outputStream.toByteArray());
     }
 }

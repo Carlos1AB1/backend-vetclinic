@@ -3,7 +3,10 @@ package com.vetclinic.controller;
 import com.vetclinic.dto.ApiResponse;
 import com.vetclinic.dto.appointment.AppointmentDTO;
 import com.vetclinic.dto.appointment.CreateAppointmentRequest;
+import com.vetclinic.dto.appointment.RescheduleAppointmentRequest;
 import com.vetclinic.dto.appointment.UpdateAppointmentRequest;
+import com.vetclinic.patterns.facade.ClinicaFacade;
+import com.vetclinic.service.AppointmentActionTokenService;
 import com.vetclinic.service.AppointmentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +37,8 @@ import java.util.UUID;
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
+    private final ClinicaFacade clinicaFacade;
+    private final AppointmentActionTokenService tokenService;
 
     /**
      * Crear una nueva cita
@@ -42,8 +47,9 @@ public class AppointmentController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'RECEPTIONIST', 'VETERINARIAN')")
     public ResponseEntity<ApiResponse<AppointmentDTO>> createAppointment(@Valid @RequestBody CreateAppointmentRequest request) {
-        log.info("POST /api/appointments - Creando nueva cita");
-        AppointmentDTO appointment = appointmentService.createAppointment(request);
+        log.info("POST /api/appointments - Creando nueva cita usando Facade Pattern");
+        // Usar Facade Pattern para agendar cita completa
+        AppointmentDTO appointment = clinicaFacade.agendarCita(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Cita creada exitosamente", appointment));
     }
@@ -182,8 +188,9 @@ public class AppointmentController {
     @PutMapping("/{id}/cancel")
     @PreAuthorize("hasAnyRole('ADMIN', 'RECEPTIONIST', 'VETERINARIAN')")
     public ResponseEntity<ApiResponse<String>> cancelAppointment(@PathVariable Long id) {
-        log.info("PUT /api/appointments/{}/cancel - Cancelando cita", id);
-        appointmentService.cancelAppointment(id);
+        log.info("PUT /api/appointments/{}/cancel - Cancelando cita usando Facade Pattern", id);
+        // Usar Facade Pattern para cancelar cita completa
+        clinicaFacade.cancelarCita(id);
         return ResponseEntity.ok(ApiResponse.success("Cita cancelada exitosamente", null));
     }
 
@@ -209,5 +216,66 @@ public class AppointmentController {
         log.info("GET /api/appointments/count - Contando citas activas");
         long count = appointmentService.countActiveAppointments();
         return ResponseEntity.ok(ApiResponse.success("Conteo realizado exitosamente", count));
+    }
+
+    // ========== ENDPOINTS PÚBLICOS PARA ACCIONES DESDE RECORDATORIOS ==========
+    // RF018 - Recordatorio de Citas: Permitir confirmar, cancelar o reprogramar desde recordatorio
+
+    /**
+     * Confirmar cita desde recordatorio (público con token)
+     * GET /api/appointments/{id}/confirm?token=...
+     */
+    @GetMapping("/{id}/confirm")
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "Confirmar cita desde recordatorio",
+        description = "Confirma una cita usando el token del recordatorio. Endpoint público."
+    )
+    public ResponseEntity<ApiResponse<AppointmentDTO>> confirmAppointmentFromReminder(
+            @PathVariable Long id,
+            @RequestParam String token) {
+        log.info("GET /api/appointments/{}/confirm - Confirmando cita desde recordatorio", id);
+        
+        // Validar token y ejecutar acción
+        AppointmentDTO appointment = appointmentService.confirmAppointmentFromReminder(id, token);
+        return ResponseEntity.ok(ApiResponse.success("Cita confirmada exitosamente", appointment));
+    }
+
+    /**
+     * Cancelar cita desde recordatorio (público con token)
+     * GET /api/appointments/{id}/cancel?token=...
+     */
+    @GetMapping("/{id}/cancel-reminder")
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "Cancelar cita desde recordatorio",
+        description = "Cancela una cita usando el token del recordatorio. Endpoint público."
+    )
+    public ResponseEntity<ApiResponse<String>> cancelAppointmentFromReminder(
+            @PathVariable Long id,
+            @RequestParam String token) {
+        log.info("GET /api/appointments/{}/cancel-reminder - Cancelando cita desde recordatorio", id);
+        
+        // Validar token y ejecutar acción
+        appointmentService.cancelAppointmentFromReminder(id, token);
+        return ResponseEntity.ok(ApiResponse.success("Cita cancelada exitosamente", null));
+    }
+
+    /**
+     * Reprogramar cita desde recordatorio (público con token)
+     * POST /api/appointments/{id}/reschedule?token=...
+     */
+    @PostMapping("/{id}/reschedule")
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "Reprogramar cita desde recordatorio",
+        description = "Reprograma una cita usando el token del recordatorio. Endpoint público."
+    )
+    public ResponseEntity<ApiResponse<AppointmentDTO>> rescheduleAppointmentFromReminder(
+            @PathVariable Long id,
+            @RequestParam String token,
+            @Valid @RequestBody RescheduleAppointmentRequest request) {
+        log.info("POST /api/appointments/{}/reschedule - Reprogramando cita desde recordatorio", id);
+        
+        // Validar token y ejecutar acción
+        AppointmentDTO appointment = appointmentService.rescheduleAppointmentFromReminder(id, token, request);
+        return ResponseEntity.ok(ApiResponse.success("Cita reprogramada exitosamente", appointment));
     }
 }

@@ -8,6 +8,7 @@ import com.vetclinic.entity.MedicalRecord;
 import com.vetclinic.entity.Patient;
 import com.vetclinic.entity.User;
 import com.vetclinic.exception.ResourceNotFoundException;
+import com.vetclinic.patterns.builder.MedicalRecordBuilder;
 import com.vetclinic.repository.AppointmentRepository;
 import com.vetclinic.repository.MedicalRecordRepository;
 import com.vetclinic.repository.PatientRepository;
@@ -52,28 +53,31 @@ public class MedicalRecordService {
         User veterinarian = userRepository.findById(request.getVeterinarianId())
             .orElseThrow(() -> new ResourceNotFoundException("Veterinario no encontrado con ID: " + request.getVeterinarianId()));
 
-        MedicalRecord medicalRecord = new MedicalRecord();
-        medicalRecord.setPatient(patient);
-        medicalRecord.setVeterinarian(veterinarian);
-        medicalRecord.setRecordDate(request.getRecordDate());
-        medicalRecord.setDiagnosis(request.getDiagnosis());
-        medicalRecord.setTreatment(request.getTreatment());
-        medicalRecord.setSymptoms(request.getSymptoms());
-        medicalRecord.setVitalSigns(request.getVitalSigns());
-        medicalRecord.setWeight(request.getWeight());
-        medicalRecord.setTemperature(request.getTemperature());
-        medicalRecord.setNotes(request.getNotes());
-        medicalRecord.setFollowUpRequired(request.getFollowUpRequired() != null ? request.getFollowUpRequired() : false);
-        medicalRecord.setFollowUpDate(request.getFollowUpDate());
-        medicalRecord.setIsActive(true);
+        // Usar Builder Pattern para construir el MedicalRecord
+        MedicalRecordBuilder builder = new MedicalRecordBuilder()
+            .conPaciente(patient)
+            .conVeterinario(veterinarian)
+            .conFechaRegistro(request.getRecordDate())
+            .conDiagnostico(request.getDiagnosis())
+            .conTratamiento(request.getTreatment())
+            .conSintomas(request.getSymptoms())
+            .conSignosVitales(request.getVitalSigns())
+            .conPeso(request.getWeight())
+            .conTemperatura(request.getTemperature())
+            .conNotas(request.getNotes())
+            .requiereSeguimiento(request.getFollowUpRequired() != null ? request.getFollowUpRequired() : false)
+            .conFechaSeguimiento(request.getFollowUpDate())
+            .activo(true);
 
-        // Si hay una cita asociada, validarla
+        // Si hay una cita asociada, validarla y agregarla
         if (request.getAppointmentId() != null) {
             Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada con ID: " + request.getAppointmentId()));
-            medicalRecord.setAppointment(appointment);
+            builder.conCita(appointment);
         }
 
+        // Construir el objeto usando Builder
+        MedicalRecord medicalRecord = builder.build();
         MedicalRecord savedRecord = medicalRecordRepository.save(medicalRecord);
         log.info("Registro médico creado exitosamente con ID: {}", savedRecord.getId());
 

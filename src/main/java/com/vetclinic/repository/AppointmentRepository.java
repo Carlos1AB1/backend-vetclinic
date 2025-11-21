@@ -52,6 +52,17 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                                      @Param("endDate") LocalDateTime endDate);
 
     /**
+     * Encontrar citas por rango de fechas con relaciones cargadas (para reportes)
+     */
+    @Query("SELECT DISTINCT a FROM Appointment a " +
+           "LEFT JOIN FETCH a.patient " +
+           "LEFT JOIN FETCH a.owner " +
+           "LEFT JOIN FETCH a.veterinarian " +
+           "WHERE a.scheduledDate BETWEEN :startDate AND :endDate AND a.isActive = true ORDER BY a.scheduledDate ASC")
+    List<Appointment> findByDateRangeWithRelations(@Param("startDate") LocalDateTime startDate, 
+                                                   @Param("endDate") LocalDateTime endDate);
+
+    /**
      * Encontrar citas de un veterinario en un rango de fechas
      */
     @Query("SELECT a FROM Appointment a WHERE a.veterinarian.id = :veterinarianId " +

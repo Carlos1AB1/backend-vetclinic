@@ -8,6 +8,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -145,6 +146,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(ApiResponse.error("Authentication failed: " + ex.getMessage()));
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMethodNotSupportedException(
+            HttpRequestMethodNotSupportedException ex,
+            WebRequest request
+    ) {
+        log.error("HTTP method not supported: {} for {}", ex.getMethod(), request.getDescription(false));
+        String supportedMethods = ex.getSupportedHttpMethods() != null 
+            ? ex.getSupportedHttpMethods().toString() 
+            : "N/A";
+        return ResponseEntity
+                .status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(ApiResponse.error(
+                    String.format("Method %s is not supported for this endpoint. Supported methods: %s", 
+                        ex.getMethod(), supportedMethods)
+                ));
     }
 
     @ExceptionHandler(Exception.class)

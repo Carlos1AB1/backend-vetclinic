@@ -11,6 +11,8 @@ import com.vetclinic.exception.UnauthorizedException;
 import com.vetclinic.patterns.adapter.EmailServiceAdapter;
 import com.vetclinic.patterns.chain.RegistrationValidationChain;
 import com.vetclinic.patterns.chain.ValidationResult;
+import com.vetclinic.patterns.factory.NotificationFactory;
+import com.vetclinic.patterns.strategy.NotificationStrategy;
 import com.vetclinic.repository.PasswordResetTokenRepository;
 import com.vetclinic.repository.RoleRepository;
 import com.vetclinic.repository.UserRepository;
@@ -51,6 +53,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailServiceAdapter emailServiceAdapter;
     private final RegistrationValidationChain validationChain;
+    private final NotificationFactory notificationFactory;
 
     @Value("${app.frontend-url}")
     private String frontendUrl;
@@ -353,7 +356,9 @@ public class AuthService {
                 frontendUrl
         );
 
-        emailServiceAdapter.sendEmail(user.getEmail(), subject, body);
+        // Usar Factory Method Pattern para crear estrategia de notificación
+        NotificationStrategy notificationStrategy = notificationFactory.create("EMAIL");
+        notificationStrategy.send(user.getEmail(), subject, body);
     }
 
     private void sendPasswordResetEmail(User user, String token) {
@@ -371,7 +376,9 @@ public class AuthService {
                 resetLink
         );
 
-        emailServiceAdapter.sendEmail(user.getEmail(), subject, body);
+        // Usar Factory Method Pattern para crear estrategia de notificación
+        NotificationStrategy notificationStrategy = notificationFactory.create("EMAIL");
+        notificationStrategy.send(user.getEmail(), subject, body);
     }
 
     private void sendPasswordChangedEmail(User user) {
@@ -385,6 +392,8 @@ public class AuthService {
                 user.getFullName()
         );
 
-        emailServiceAdapter.sendEmail(user.getEmail(), subject, body);
+        // Usar Factory Method Pattern para crear estrategia de notificación
+        NotificationStrategy notificationStrategy = notificationFactory.create("EMAIL");
+        notificationStrategy.send(user.getEmail(), subject, body);
     }
 }
