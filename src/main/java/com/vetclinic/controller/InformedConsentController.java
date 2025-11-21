@@ -27,6 +27,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*")
+@io.swagger.v3.oas.annotations.tags.Tag(name = "10. Consentimientos Informados", description = "Gestión de documentos de consentimiento informado para procedimientos")
+@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
 public class InformedConsentController {
 
     private final InformedConsentService informedConsentService;

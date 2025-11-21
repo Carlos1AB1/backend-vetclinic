@@ -8,6 +8,11 @@ import com.vetclinic.dto.appointment.UpdateAppointmentRequest;
 import com.vetclinic.patterns.facade.ClinicaFacade;
 import com.vetclinic.service.AppointmentActionTokenService;
 import com.vetclinic.service.AppointmentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +39,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*")
+@Tag(name = "05. Citas Médicas", description = "Sistema completo de agendamiento y gestión de citas - Incluye validaciones y notificaciones")
+@SecurityRequirement(name = "bearerAuth")
 public class AppointmentController {
 
     private final AppointmentService appointmentService;

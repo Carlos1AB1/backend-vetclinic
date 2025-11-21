@@ -31,6 +31,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*")
+@io.swagger.v3.oas.annotations.tags.Tag(name = "07. Recetas y Prescripciones", description = "Gestión de prescripciones médicas - Incluye exportación a PDF y Excel")
+@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
 public class PrescriptionController {
 
     private final PrescriptionService prescriptionService;

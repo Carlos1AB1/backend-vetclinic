@@ -31,6 +31,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*")
+@io.swagger.v3.oas.annotations.tags.Tag(name = "06. Historias Clínicas", description = "Gestión completa de historias clínicas - Registros médicos detallados de pacientes")
+@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
 public class MedicalRecordController {
 
     private final MedicalRecordService medicalRecordService;

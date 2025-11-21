@@ -25,6 +25,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*")
+@io.swagger.v3.oas.annotations.tags.Tag(name = "11. Agenda y Visualización", description = "Visualización de agenda médica - Vistas diaria, semanal y mensual")
+@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
 public class AgendaController {
 
     private final AgendaService agendaService;

@@ -28,6 +28,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*")
+@io.swagger.v3.oas.annotations.tags.Tag(name = "08. Inventario", description = "Control completo de inventario - Stock, productos, alertas de vencimiento")
+@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
 public class InventoryController {
 
     private final InventoryService inventoryService;

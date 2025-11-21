@@ -37,8 +37,8 @@ public class AppointmentsReportGenerator implements ReportGenerator {
         LocalDateTime startDate = (LocalDateTime) parameters.get("startDate");
         LocalDateTime endDate = (LocalDateTime) parameters.get("endDate");
 
-        // Usar método con JOIN FETCH para evitar problemas de lazy loading
-        List<Appointment> appointments = appointmentRepository.findByDateRangeWithRelations(startDate, endDate);
+        // Obtener citas usando el servicio que devuelve DTOs
+        List<AppointmentDTO> appointments = appointmentService.getAppointmentsByDateRange(startDate, endDate);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
@@ -65,23 +65,22 @@ public class AppointmentsReportGenerator implements ReportGenerator {
 
             // Datos
             int rowNum = 1;
-            for (Appointment appointment : appointments) {
+            for (AppointmentDTO appointment : appointments) {
                 try {
                     Row row = sheet.createRow(rowNum++);
                     row.createCell(0).setCellValue(appointment.getId());
                     
                     // Manejar relaciones con verificación de null
-                    String patientName = appointment.getPatient() != null ? appointment.getPatient().getName() : "N/A";
-                    String ownerName = appointment.getOwner() != null ? appointment.getOwner().getFullName() : "N/A";
-                    String veterinarianName = appointment.getVeterinarian() != null ? 
-                        appointment.getVeterinarian().getFirstName() + " " + appointment.getVeterinarian().getLastName() : "N/A";
+                    String patientName = appointment.getPatientName() != null ? appointment.getPatientName() : "N/A";
+                    String ownerName = appointment.getOwnerName() != null ? appointment.getOwnerName() : "N/A";
+                    String veterinarianName = appointment.getVeterinarianName() != null ? appointment.getVeterinarianName() : "N/A";
                     
                     row.createCell(1).setCellValue(patientName);
                     row.createCell(2).setCellValue(ownerName);
                     row.createCell(3).setCellValue(veterinarianName);
                     row.createCell(4).setCellValue(appointment.getScheduledDate().format(DATE_FORMATTER));
                     row.createCell(5).setCellValue(appointment.getAppointmentType());
-                    row.createCell(6).setCellValue(appointment.getStatus().name());
+                    row.createCell(6).setCellValue(appointment.getStatus());
                     row.createCell(7).setCellValue(appointment.getReason() != null ? appointment.getReason() : "");
                 } catch (Exception e) {
                     log.warn("Error al procesar cita ID {}: {}", appointment.getId(), e.getMessage());

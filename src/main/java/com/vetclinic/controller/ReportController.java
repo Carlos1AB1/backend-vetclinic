@@ -23,6 +23,8 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*")
+@io.swagger.v3.oas.annotations.tags.Tag(name = "12. Reportes Operativos", description = "Generación de reportes y análisis - Citas, pacientes, servicios en PDF")
+@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
 public class ReportController {
 
     private final ReportService reportService;

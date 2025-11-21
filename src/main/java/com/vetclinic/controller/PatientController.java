@@ -6,6 +6,8 @@ import com.vetclinic.dto.patient.PatientDTO;
 import com.vetclinic.dto.patient.UpdatePatientRequest;
 import com.vetclinic.service.PatientService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,8 +30,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/patients")
 @RequiredArgsConstructor
-@Tag(name = "Patients", description = "API para la gestión de pacientes (mascotas)")
+@Tag(name = "03. Pacientes (Mascotas)", description = "Gestión completa de pacientes (mascotas) - Registro, búsqueda y actualización")
 @SecurityRequirement(name = "bearerAuth")
+@CrossOrigin(origins = "*")
 public class PatientController {
 
     private final PatientService patientService;
@@ -39,8 +42,19 @@ public class PatientController {
      */
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST')")
-    @Operation(summary = "Crear paciente", description = "Crea un nuevo paciente en el sistema")
-    public ResponseEntity<ApiResponse<PatientDTO>> createPatient(@Valid @RequestBody CreatePatientRequest request) {
+    @Operation(
+        summary = "Crear nuevo paciente (mascota)",
+        description = "Registra un nuevo paciente en el sistema con todos sus datos básicos"
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Paciente creado exitosamente"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos inválidos"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Propietario no encontrado")
+    })
+    public ResponseEntity<ApiResponse<PatientDTO>> createPatient(
+        @Parameter(description = "Datos del nuevo paciente", required = true)
+        @Valid @RequestBody CreatePatientRequest request
+    ) {
         PatientDTO patient = patientService.createPatient(request);
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(ApiResponse.success(patient));
@@ -51,12 +65,18 @@ public class PatientController {
      */
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST')")
-    @Operation(summary = "Listar pacientes", description = "Obtiene la lista de pacientes con paginación")
+    @Operation(
+        summary = "Listar todos los pacientes",
+        description = "Obtiene lista paginada de todos los pacientes activos con opciones de ordenamiento"
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente")
+    })
     public ResponseEntity<ApiResponse<Page<PatientDTO>>> getAllPatients(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortDirection
+            @Parameter(description = "Número de página (inicia en 0)", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamaño de página", example = "10") @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo para ordenar", example = "name") @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Dirección de ordenamiento", example = "ASC") @RequestParam(defaultValue = "DESC") String sortDirection
     ) {
         Sort.Direction direction = sortDirection.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));

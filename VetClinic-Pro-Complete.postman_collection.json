@@ -1,0 +1,1985 @@
+{
+	"info": {
+		"_postman_id": "vetclinic-pro-complete",
+		"name": "VetClinic Pro - API Completa",
+		"description": "Colección completa de la API REST de VetClinic Pro con todos los endpoints funcionales y datos de ejemplo válidos.\n\n## 🔐 Autenticación\n1. Ejecuta primero el endpoint de Login\n2. El token se guardará automáticamente en la variable {{token}}\n3. Todos los demás endpoints lo usarán automáticamente\n\n## 📋 Módulos Incluidos\n- 01. Autenticación\n- 02. Usuarios\n- 03. Pacientes (Mascotas)\n- 04. Propietarios (Clientes)\n- 05. Citas Médicas\n- 06. Historias Clínicas\n- 07. Recetas y Prescripciones\n- 08. Inventario\n- 09. Catálogo de Servicios\n- 10. Consentimientos Informados\n- 11. Agenda\n- 12. Reportes\n- 13. Dashboard",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8081/api",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "patientId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "ownerId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "veterinarianId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "appointmentId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "medicalRecordId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "prescriptionId",
+			"value": "1",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "01. Autenticación",
+			"item": [
+				{
+					"name": "Login - Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.accessToken) {",
+									"        pm.collectionVariables.set(\"token\", jsonData.data.accessToken);",
+									"        console.log(\"Token guardado exitosamente\");",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Inicia sesión con credenciales de administrador. El token se guardará automáticamente."
+					},
+					"response": []
+				},
+				{
+					"name": "Register - Nuevo Usuario",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"vet_carlos\",\n  \"email\": \"carlos.vet@vetclinic.com\",\n  \"password\": \"Vet123456!\",\n  \"firstName\": \"Carlos\",\n  \"lastName\": \"Veterinario\",\n  \"phone\": \"3001234567\",\n  \"roles\": [\"VETERINARIAN\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Registra un nuevo usuario en el sistema"
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"<REFRESH_TOKEN>\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/refresh-token",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"refresh-token"
+							]
+						},
+						"description": "Refresca el access token usando el refresh token"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/auth/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"me"
+							]
+						},
+						"description": "Obtiene los datos del usuario autenticado actual"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"Admin123!\",\n  \"newPassword\": \"NewAdmin123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/change-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"change-password"
+							]
+						},
+						"description": "Cambia la contraseña del usuario autenticado"
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@vetclinic.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/forgot-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"forgot-password"
+							]
+						},
+						"description": "Solicita un token para restablecer la contraseña"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/auth/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Cierra la sesión del usuario"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de autenticación y gestión de sesiones"
+		},
+		{
+			"name": "02. Usuarios",
+			"item": [
+				{
+					"name": "Listar Todos los Usuarios",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users?page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Lista todos los usuarios con paginación (Solo ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Usuario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"recepcionista1\",\n  \"email\": \"recep1@vetclinic.com\",\n  \"password\": \"Recep123!\",\n  \"firstName\": \"María\",\n  \"lastName\": \"López\",\n  \"phone\": \"3109876543\",\n  \"roles\": [\"RECEPTIONIST\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						},
+						"description": "Crea un nuevo usuario (Solo ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Usuario por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{veterinarianId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{veterinarianId}}"
+							]
+						},
+						"description": "Obtiene un usuario específico por su ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Usuario",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"María Actualizada\",\n  \"lastName\": \"López Pérez\",\n  \"phone\": \"3109876543\",\n  \"roles\": [\"RECEPTIONIST\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/{{veterinarianId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{veterinarianId}}"
+							]
+						},
+						"description": "Actualiza la información de un usuario"
+					},
+					"response": []
+				}
+			],
+			"description": "Gestión de usuarios del sistema (Solo ADMIN)"
+		},
+		{
+			"name": "03. Pacientes (Mascotas)",
+			"item": [
+				{
+					"name": "Crear Paciente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set(\"patientId\", jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Max\",\n  \"species\": \"Perro\",\n  \"breed\": \"Golden Retriever\",\n  \"birthDate\": \"2020-05-15\",\n  \"gender\": \"MALE\",\n  \"color\": \"Dorado\",\n  \"weight\": 28.5,\n  \"microchipNumber\": \"123456789012345\",\n  \"allergies\": \"Ninguna conocida\",\n  \"medicalHistory\": \"Vacunación completa al día\",\n  \"notes\": \"Muy amigable\",\n  \"ownerId\": {{ownerId}}\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/patients",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"patients"
+							]
+						},
+						"description": "Crea un nuevo paciente (mascota)"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Pacientes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/patients?page=0&size=10&sortBy=name&sortDirection=ASC",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"patients"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "name"
+								},
+								{
+									"key": "sortDirection",
+									"value": "ASC"
+								}
+							]
+						},
+						"description": "Lista todos los pacientes activos con paginación"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Paciente por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/patients/{{patientId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"patients",
+								"{{patientId}}"
+							]
+						},
+						"description": "Obtiene los detalles de un paciente específico"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Paciente",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Max\",\n  \"species\": \"Perro\",\n  \"breed\": \"Golden Retriever\",\n  \"birthDate\": \"2020-05-15\",\n  \"gender\": \"MALE\",\n  \"color\": \"Dorado\",\n  \"weight\": 30.0,\n  \"microchipNumber\": \"123456789012345\",\n  \"allergies\": \"Ninguna conocida\",\n  \"medicalHistory\": \"Vacunación completa al día. Última revisión 2024-01-15\",\n  \"notes\": \"Muy amigable y activo\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/patients/{{patientId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"patients",
+								"{{patientId}}"
+							]
+						},
+						"description": "Actualiza la información de un paciente"
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar Pacientes por Nombre",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/patients/search?name=Max",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"patients",
+								"search"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "Max"
+								}
+							]
+						},
+						"description": "Busca pacientes por nombre"
+					},
+					"response": []
+				},
+				{
+					"name": "Pacientes por Propietario",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/patients/owner/{{ownerId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"patients",
+								"owner",
+								"{{ownerId}}"
+							]
+						},
+						"description": "Obtiene todos los pacientes de un propietario"
+					},
+					"response": []
+				},
+				{
+					"name": "Contar Pacientes Activos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/patients/count",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"patients",
+								"count"
+							]
+						},
+						"description": "Cuenta el total de pacientes activos"
+					},
+					"response": []
+				}
+			],
+			"description": "Gestión completa de pacientes (mascotas)"
+		},
+		{
+			"name": "04. Propietarios (Clientes)",
+			"item": [
+				{
+					"name": "Crear Propietario",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set(\"ownerId\", jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Juan\",\n  \"lastName\": \"García\",\n  \"email\": \"juan.garcia@email.com\",\n  \"phone\": \"3012345678\",\n  \"alternativePhone\": \"3209876543\",\n  \"address\": \"Calle 123 #45-67\",\n  \"city\": \"Bogotá\",\n  \"postalCode\": \"110111\",\n  \"documentType\": \"DNI\",\n  \"documentNumber\": \"1234567890\",\n  \"notes\": \"Cliente nuevo\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/owners",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"owners"
+							]
+						},
+						"description": "Crea un nuevo propietario (cliente)"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Propietarios",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/owners",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"owners"
+							]
+						},
+						"description": "Lista todos los propietarios activos"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Propietarios Paginado",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/owners/page?page=0&size=10&sortBy=lastName&sortDirection=ASC",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"owners",
+								"page"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "lastName"
+								},
+								{
+									"key": "sortDirection",
+									"value": "ASC"
+								}
+							]
+						},
+						"description": "Lista propietarios con paginación"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Propietario por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/owners/{{ownerId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"owners",
+								"{{ownerId}}"
+							]
+						},
+						"description": "Obtiene los detalles de un propietario específico"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Propietario",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Juan Carlos\",\n  \"lastName\": \"García Pérez\",\n  \"email\": \"juan.garcia@email.com\",\n  \"phone\": \"3012345678\",\n  \"alternativePhone\": \"3209876543\",\n  \"address\": \"Calle 123 #45-67 Apto 301\",\n  \"city\": \"Bogotá\",\n  \"postalCode\": \"110111\",\n  \"documentType\": \"DNI\",\n  \"documentNumber\": \"1234567890\",\n  \"notes\": \"Cliente preferencial\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/owners/{{ownerId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"owners",
+								"{{ownerId}}"
+							]
+						},
+						"description": "Actualiza la información de un propietario"
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar Propietarios",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/owners/search?keyword=García",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"owners",
+								"search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "García"
+								}
+							]
+						},
+						"description": "Busca propietarios por nombre, email o documento"
+					},
+					"response": []
+				},
+				{
+					"name": "Pacientes de un Propietario",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/owners/{{ownerId}}/patients",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"owners",
+								"{{ownerId}}",
+								"patients"
+							]
+						},
+						"description": "Obtiene todas las mascotas de un propietario"
+					},
+					"response": []
+				}
+			],
+			"description": "Gestión de propietarios (clientes)"
+		},
+		{
+			"name": "05. Citas Médicas",
+			"item": [
+				{
+					"name": "Crear Cita (Facade Pattern)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set(\"appointmentId\", jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"patientId\": {{patientId}},\n  \"ownerId\": {{ownerId}},\n  \"veterinarianId\": \"{{veterinarianId}}\",\n  \"scheduledDate\": \"2024-12-25T10:00:00\",\n  \"appointmentType\": \"CONSULTATION\",\n  \"reason\": \"Revisión general y vacunación anual\",\n  \"notes\": \"Traer cartilla de vacunación\",\n  \"durationMinutes\": 30\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/appointments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"appointments"
+							]
+						},
+						"description": "Crea una nueva cita usando Facade Pattern con validaciones"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Citas Paginado",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/appointments/page?page=0&size=10&sortBy=scheduledDate&sortDirection=DESC",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"appointments",
+								"page"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "scheduledDate"
+								},
+								{
+									"key": "sortDirection",
+									"value": "DESC"
+								}
+							]
+						},
+						"description": "Lista citas con paginación"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Cita por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/appointments/{{appointmentId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"appointments",
+								"{{appointmentId}}"
+							]
+						},
+						"description": "Obtiene los detalles de una cita específica"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Cita",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"scheduledDate\": \"2024-12-25T14:00:00\",\n  \"status\": \"CONFIRMED\",\n  \"notes\": \"Cita confirmada por el cliente\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/appointments/{{appointmentId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"appointments",
+								"{{appointmentId}}"
+							]
+						},
+						"description": "Actualiza una cita existente (State Pattern)"
+					},
+					"response": []
+				},
+				{
+					"name": "Cancelar Cita (Facade Pattern)",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/appointments/{{appointmentId}}/cancel",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"appointments",
+								"{{appointmentId}}",
+								"cancel"
+							]
+						},
+						"description": "Cancela una cita usando Facade Pattern"
+					},
+					"response": []
+				},
+				{
+					"name": "Citas por Paciente",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/appointments/patient/{{patientId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"appointments",
+								"patient",
+								"{{patientId}}"
+							]
+						},
+						"description": "Obtiene todas las citas de un paciente"
+					},
+					"response": []
+				},
+				{
+					"name": "Citas por Veterinario",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/appointments/veterinarian/{{veterinarianId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"appointments",
+								"veterinarian",
+								"{{veterinarianId}}"
+							]
+						},
+						"description": "Obtiene todas las citas de un veterinario"
+					},
+					"response": []
+				},
+				{
+					"name": "Próximas Citas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/appointments/upcoming?days=7",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"appointments",
+								"upcoming"
+							],
+							"query": [
+								{
+									"key": "days",
+									"value": "7"
+								}
+							]
+						},
+						"description": "Obtiene las próximas citas en X días"
+					},
+					"response": []
+				}
+			],
+			"description": "Sistema completo de gestión de citas con patrones Facade, Chain of Responsibility, State y Observer"
+		},
+		{
+			"name": "06. Historias Clínicas",
+			"item": [
+				{
+					"name": "Crear Historia Clínica (Builder Pattern)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set(\"medicalRecordId\", jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"patientId\": {{patientId}},\n  \"appointmentId\": {{appointmentId}},\n  \"veterinarianId\": \"{{veterinarianId}}\",\n  \"recordDate\": \"2024-01-20T10:30:00\",\n  \"diagnosis\": \"Infección respiratoria leve. Rinitis alérgica.\",\n  \"treatment\": \"Antibiótico Amoxicilina 500mg cada 12 horas por 7 días. Antihistamínico.\",\n  \"symptoms\": \"Estornudos frecuentes, secreción nasal clara, leve decaimiento.\",\n  \"vitalSigns\": \"FC: 120 lpm, FR: 24 rpm, Temp: 38.5°C\",\n  \"weight\": 28.5,\n  \"temperature\": 38.5,\n  \"notes\": \"Revisar evolución en 5 días. Evitar ambientes polvorientos.\",\n  \"followUpRequired\": true,\n  \"followUpDate\": \"2024-01-27T10:00:00\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/medical-records",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"medical-records"
+							]
+						},
+						"description": "Crea una nueva historia clínica usando Builder Pattern"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Historias Clínicas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/medical-records/page?page=0&size=10&sortBy=recordDate&sortDirection=DESC",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"medical-records",
+								"page"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "recordDate"
+								},
+								{
+									"key": "sortDirection",
+									"value": "DESC"
+								}
+							]
+						},
+						"description": "Lista historias clínicas con paginación"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Historia por ID (Proxy Pattern)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/medical-records/{{medicalRecordId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"medical-records",
+								"{{medicalRecordId}}"
+							]
+						},
+						"description": "Obtiene una historia clínica usando Proxy Pattern (con control de acceso)"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Historia (Proxy Pattern)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"diagnosis\": \"Infección respiratoria leve controlada. Rinitis alérgica en tratamiento.\",\n  \"treatment\": \"Continuar con Antibiótico Amoxicilina 500mg. Agregado spray nasal.\",\n  \"notes\": \"Paciente muestra mejoría significativa. Continuar tratamiento 3 días más.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/medical-records/{{medicalRecordId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"medical-records",
+								"{{medicalRecordId}}"
+							]
+						},
+						"description": "Actualiza una historia clínica usando Proxy Pattern"
+					},
+					"response": []
+				},
+				{
+					"name": "Historias por Paciente",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/medical-records/patient/{{patientId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"medical-records",
+								"patient",
+								"{{patientId}}"
+							]
+						},
+						"description": "Obtiene todas las historias clínicas de un paciente"
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar por Diagnóstico",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/medical-records/search?diagnosis=Infección",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"medical-records",
+								"search"
+							],
+							"query": [
+								{
+									"key": "diagnosis",
+									"value": "Infección"
+								}
+							]
+						},
+						"description": "Busca historias clínicas por diagnóstico"
+					},
+					"response": []
+				}
+			],
+			"description": "Gestión de historias clínicas con Builder Pattern y Proxy Pattern"
+		},
+		{
+			"name": "07. Recetas y Prescripciones",
+			"item": [
+				{
+					"name": "Crear Prescripción (Builder Pattern)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set(\"prescriptionId\", jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"medicalRecordId\": {{medicalRecordId}},\n  \"patientId\": {{patientId}},\n  \"medicationName\": \"Amoxicilina 500mg\",\n  \"dosage\": \"500mg\",\n  \"frequency\": \"Cada 12 horas\",\n  \"duration\": \"7 días\",\n  \"instructions\": \"Administrar con alimento. No suspender tratamiento antes de tiempo.\",\n  \"startDate\": \"2024-01-20T10:00:00\",\n  \"endDate\": \"2024-01-27T10:00:00\",\n  \"notes\": \"Vigilar reacciones alérgicas\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/prescriptions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"prescriptions"
+							]
+						},
+						"description": "Crea una nueva prescripción usando Builder Pattern"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Prescripciones",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/prescriptions/page?page=0&size=10&sortBy=startDate&sortDirection=DESC",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"prescriptions",
+								"page"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "startDate"
+								},
+								{
+									"key": "sortDirection",
+									"value": "DESC"
+								}
+							]
+						},
+						"description": "Lista prescripciones con paginación"
+					},
+					"response": []
+				},
+				{
+					"name": "Exportar Prescripción PDF (Factory Method)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/prescriptions/{{prescriptionId}}/export?format=PDF",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"prescriptions",
+								"{{prescriptionId}}",
+								"export"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "PDF"
+								}
+							]
+						},
+						"description": "Exporta una prescripción a PDF usando Factory Method Pattern"
+					},
+					"response": []
+				},
+				{
+					"name": "Exportar Prescripción Excel (Factory Method)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/prescriptions/{{prescriptionId}}/export?format=EXCEL",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"prescriptions",
+								"{{prescriptionId}}",
+								"export"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "EXCEL"
+								}
+							]
+						},
+						"description": "Exporta una prescripción a Excel usando Factory Method Pattern"
+					},
+					"response": []
+				},
+				{
+					"name": "Prescripciones por Paciente",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/prescriptions/patient/{{patientId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"prescriptions",
+								"patient",
+								"{{patientId}}"
+							]
+						},
+						"description": "Obtiene todas las prescripciones de un paciente"
+					},
+					"response": []
+				}
+			],
+			"description": "Gestión de prescripciones con Builder Pattern y Factory Method Pattern para exportación"
+		},
+		{
+			"name": "08. Inventario",
+			"item": [
+				{
+					"name": "Crear Item de Inventario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Amoxicilina 500mg - Caja x 20\",\n  \"description\": \"Antibiótico de amplio espectro\",\n  \"category\": \"Medicamentos\",\n  \"sku\": \"MED-AMOXI-500-20\",\n  \"quantity\": 50,\n  \"minStockLevel\": 10,\n  \"maxStockLevel\": 100,\n  \"unitPrice\": 45000.00,\n  \"supplier\": \"Laboratorios Farmaveterinaria S.A.\",\n  \"expirationDate\": \"2025-12-31\",\n  \"location\": \"Estante A3\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/inventory",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory"
+							]
+						},
+						"description": "Crea un nuevo item en el inventario (RF019)"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Inventario",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/inventory/page?page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory",
+								"page"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Lista items del inventario con paginación"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Stock",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quantityChange\": -5\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/inventory/1/stock",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory",
+								"1",
+								"stock"
+							]
+						},
+						"description": "Actualiza el stock de un item (usar números negativos para disminuir)"
+					},
+					"response": []
+				},
+				{
+					"name": "Items con Stock Bajo",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/inventory/low-stock",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory",
+								"low-stock"
+							]
+						},
+						"description": "Obtiene items con stock por debajo del mínimo"
+					},
+					"response": []
+				},
+				{
+					"name": "Items Vencidos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/inventory/expired",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory",
+								"expired"
+							]
+						},
+						"description": "Obtiene items vencidos"
+					},
+					"response": []
+				},
+				{
+					"name": "Items por Vencer",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/inventory/expiring-soon?days=30",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory",
+								"expiring-soon"
+							],
+							"query": [
+								{
+									"key": "days",
+									"value": "30"
+								}
+							]
+						},
+						"description": "Obtiene items que vencerán en X días"
+					},
+					"response": []
+				}
+			],
+			"description": "Gestión completa de inventario (RF019)"
+		},
+		{
+			"name": "09. Catálogo de Servicios",
+			"item": [
+				{
+					"name": "Crear Servicio",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Consulta Veterinaria General\",\n  \"description\": \"Consulta general con examen físico completo\",\n  \"category\": \"Consultas\",\n  \"price\": 80000.00,\n  \"durationMinutes\": 30,\n  \"requiresAppointment\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/services",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"services"
+							]
+						},
+						"description": "Crea un nuevo servicio en el catálogo (RF017)"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Servicios",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/services/page?page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"services",
+								"page"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Lista servicios del catálogo con paginación"
+					},
+					"response": []
+				},
+				{
+					"name": "Servicios Activos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/services/active",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"services",
+								"active"
+							]
+						},
+						"description": "Obtiene solo los servicios activos"
+					},
+					"response": []
+				},
+				{
+					"name": "Servicios por Categoría",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/services/category/Consultas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"services",
+								"category",
+								"Consultas"
+							]
+						},
+						"description": "Obtiene servicios filtrados por categoría"
+					},
+					"response": []
+				}
+			],
+			"description": "Catálogo de servicios de la clínica (RF017)"
+		},
+		{
+			"name": "10. Consentimientos Informados",
+			"item": [
+				{
+					"name": "Crear Consentimiento",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"patientId\": {{patientId}},\n  \"procedureType\": \"SURGERY\",\n  \"procedureDescription\": \"Esterilización quirúrgica (castración)\",\n  \"risks\": \"Riesgos anestésicos, sangrado, infección post-operatoria\",\n  \"benefits\": \"Control poblacional, prevención de enfermedades reproductivas\",\n  \"alternatives\": \"Métodos hormonales temporales (no recomendados a largo plazo)\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/informed-consents",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"informed-consents"
+							]
+						},
+						"description": "Crea un nuevo consentimiento informado (RF016)"
+					},
+					"response": []
+				},
+				{
+					"name": "Firmar Consentimiento",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/informed-consents/1/sign",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"informed-consents",
+								"1",
+								"sign"
+							]
+						},
+						"description": "Firma un consentimiento informado"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Consentimientos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/informed-consents/page?page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"informed-consents",
+								"page"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Lista consentimientos informados con paginación"
+					},
+					"response": []
+				},
+				{
+					"name": "Consentimientos por Paciente",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/informed-consents/patient/{{patientId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"informed-consents",
+								"patient",
+								"{{patientId}}"
+							]
+						},
+						"description": "Obtiene consentimientos de un paciente"
+					},
+					"response": []
+				},
+				{
+					"name": "Consentimientos Pendientes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/informed-consents/pending",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"informed-consents",
+								"pending"
+							]
+						},
+						"description": "Obtiene consentimientos pendientes de firma"
+					},
+					"response": []
+				}
+			],
+			"description": "Gestión de consentimientos informados (RF016)"
+		},
+		{
+			"name": "11. Agenda y Visualización",
+			"item": [
+				{
+					"name": "Agenda Diaria (Strategy Pattern)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/agenda/daily?date=2024-12-25&veterinarianId={{veterinarianId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"agenda",
+								"daily"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2024-12-25"
+								},
+								{
+									"key": "veterinarianId",
+									"value": "{{veterinarianId}}"
+								}
+							]
+						},
+						"description": "Obtiene agenda diaria usando Strategy Pattern (RF010)"
+					},
+					"response": []
+				},
+				{
+					"name": "Agenda Semanal (Strategy Pattern)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/agenda/weekly?date=2024-12-25&veterinarianId={{veterinarianId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"agenda",
+								"weekly"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2024-12-25"
+								},
+								{
+									"key": "veterinarianId",
+									"value": "{{veterinarianId}}"
+								}
+							]
+						},
+						"description": "Obtiene agenda semanal usando Strategy Pattern (RF010)"
+					},
+					"response": []
+				},
+				{
+					"name": "Agenda Mensual (Strategy Pattern)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/agenda/monthly?date=2024-12-25&veterinarianId={{veterinarianId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"agenda",
+								"monthly"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2024-12-25"
+								},
+								{
+									"key": "veterinarianId",
+									"value": "{{veterinarianId}}"
+								}
+							]
+						},
+						"description": "Obtiene agenda mensual usando Strategy Pattern (RF010)"
+					},
+					"response": []
+				},
+				{
+					"name": "Vista de Agenda Dinámica",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/agenda/view?type=DAILY&date=2024-12-25&veterinarianId={{veterinarianId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"agenda",
+								"view"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "DAILY",
+									"description": "DAILY, WEEKLY, MONTHLY"
+								},
+								{
+									"key": "date",
+									"value": "2024-12-25"
+								},
+								{
+									"key": "veterinarianId",
+									"value": "{{veterinarianId}}"
+								}
+							]
+						},
+						"description": "Vista de agenda dinámica según tipo (Strategy Pattern)"
+					},
+					"response": []
+				}
+			],
+			"description": "Visualización de agenda con Strategy Pattern (RF010)"
+		},
+		{
+			"name": "12. Reportes Operativos",
+			"item": [
+				{
+					"name": "Reporte de Citas (Factory Method)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/reports/appointments?startDate=2024-01-01T00:00:00&endDate=2024-12-31T23:59:59",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reports",
+								"appointments"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-01T00:00:00"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-12-31T23:59:59"
+								}
+							]
+						},
+						"description": "Genera reporte de citas en PDF usando Factory Method (RF015)"
+					},
+					"response": []
+				},
+				{
+					"name": "Reporte de Pacientes (Factory Method)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/reports/patients",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reports",
+								"patients"
+							]
+						},
+						"description": "Genera reporte de pacientes en PDF usando Factory Method (RF015)"
+					},
+					"response": []
+				},
+				{
+					"name": "Reporte de Servicios (Factory Method)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/reports/services",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reports",
+								"services"
+							]
+						},
+						"description": "Genera reporte de servicios en PDF usando Factory Method (RF015)"
+					},
+					"response": []
+				},
+				{
+					"name": "Generar Reporte Dinámico",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/reports/generate?type=APPOINTMENTS&startDate=2024-01-01T00:00:00&endDate=2024-12-31T23:59:59",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reports",
+								"generate"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "APPOINTMENTS",
+									"description": "APPOINTMENTS, PATIENTS, SERVICES"
+								},
+								{
+									"key": "startDate",
+									"value": "2024-01-01T00:00:00"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-12-31T23:59:59"
+								}
+							]
+						},
+						"description": "Genera reportes dinámicamente según tipo usando Factory Method Pattern"
+					},
+					"response": []
+				}
+			],
+			"description": "Generación de reportes operativos con Factory Method Pattern (RF015)"
+		},
+		{
+			"name": "13. Dashboard y Estadísticas",
+			"item": [
+				{
+					"name": "Estadísticas del Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/dashboard/stats",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"dashboard",
+								"stats"
+							]
+						},
+						"description": "Obtiene estadísticas generales del sistema para el dashboard"
+					},
+					"response": []
+				}
+			],
+			"description": "Métricas y estadísticas del sistema"
+		}
+	]
+}
+

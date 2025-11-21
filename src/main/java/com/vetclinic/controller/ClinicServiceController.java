@@ -28,6 +28,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*")
+@io.swagger.v3.oas.annotations.tags.Tag(name = "09. Catálogo de Servicios", description = "Gestión del catálogo de servicios ofrecidos por la clínica")
+@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
 public class ClinicServiceController {
 
     private final ClinicService clinicService;
