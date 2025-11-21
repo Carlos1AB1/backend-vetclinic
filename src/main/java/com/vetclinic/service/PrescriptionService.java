@@ -7,6 +7,7 @@ import com.vetclinic.entity.MedicalRecord;
 import com.vetclinic.entity.Patient;
 import com.vetclinic.entity.Prescription;
 import com.vetclinic.exception.ResourceNotFoundException;
+import com.vetclinic.patterns.builder.PrescriptionBuilder;
 import com.vetclinic.repository.MedicalRecordRepository;
 import com.vetclinic.repository.PatientRepository;
 import com.vetclinic.repository.PrescriptionRepository;
@@ -48,18 +49,20 @@ public class PrescriptionService {
         Patient patient = patientRepository.findById(request.getPatientId())
             .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con ID: " + request.getPatientId()));
 
-        Prescription prescription = new Prescription();
-        prescription.setMedicalRecord(medicalRecord);
-        prescription.setPatient(patient);
-        prescription.setMedicationName(request.getMedicationName());
-        prescription.setDosage(request.getDosage());
-        prescription.setFrequency(request.getFrequency());
-        prescription.setDuration(request.getDuration());
-        prescription.setInstructions(request.getInstructions());
-        prescription.setStartDate(request.getStartDate());
-        prescription.setEndDate(request.getEndDate());
-        prescription.setNotes(request.getNotes());
-        prescription.setIsActive(true);
+        // Usar Builder Pattern para construir la Prescription
+        Prescription prescription = new PrescriptionBuilder()
+            .conRegistroMedico(medicalRecord)
+            .conPaciente(patient)
+            .conMedicamento(request.getMedicationName())
+            .conDosis(request.getDosage())
+            .conFrecuencia(request.getFrequency())
+            .conDuracion(request.getDuration())
+            .conInstrucciones(request.getInstructions())
+            .conFechaInicio(request.getStartDate())
+            .conFechaFin(request.getEndDate())
+            .conNotas(request.getNotes())
+            .activo(true)
+            .build();
 
         Prescription savedPrescription = prescriptionRepository.save(prescription);
         log.info("Prescripción creada exitosamente con ID: {}", savedPrescription.getId());

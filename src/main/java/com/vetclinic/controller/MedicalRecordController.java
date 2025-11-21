@@ -4,6 +4,7 @@ import com.vetclinic.dto.ApiResponse;
 import com.vetclinic.dto.medicalrecord.CreateMedicalRecordRequest;
 import com.vetclinic.dto.medicalrecord.MedicalRecordDTO;
 import com.vetclinic.dto.medicalrecord.UpdateMedicalRecordRequest;
+import com.vetclinic.patterns.proxy.MedicalRecordServiceProxy;
 import com.vetclinic.service.MedicalRecordService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ import java.util.UUID;
 public class MedicalRecordController {
 
     private final MedicalRecordService medicalRecordService;
+    private final MedicalRecordServiceProxy medicalRecordServiceProxy;
 
     /**
      * Crear un nuevo registro médico
@@ -75,8 +77,9 @@ public class MedicalRecordController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST')")
     public ResponseEntity<ApiResponse<MedicalRecordDTO>> getMedicalRecordById(@PathVariable Long id) {
-        log.info("GET /api/medical-records/{} - Obteniendo registro médico", id);
-        MedicalRecordDTO medicalRecord = medicalRecordService.getMedicalRecordById(id);
+        log.info("GET /api/medical-records/{} - Obteniendo registro médico usando Proxy Pattern", id);
+        // Usar Proxy Pattern para control de acceso y auditoría
+        MedicalRecordDTO medicalRecord = medicalRecordServiceProxy.getMedicalRecordById(id);
         return ResponseEntity.ok(ApiResponse.success("Registro médico obtenido exitosamente", medicalRecord));
     }
 
@@ -160,8 +163,9 @@ public class MedicalRecordController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateMedicalRecordRequest request) {
         
-        log.info("PUT /api/medical-records/{} - Actualizando registro médico", id);
-        MedicalRecordDTO medicalRecord = medicalRecordService.updateMedicalRecord(id, request);
+        log.info("PUT /api/medical-records/{} - Actualizando registro médico usando Proxy Pattern", id);
+        // Usar Proxy Pattern para control de acceso y auditoría
+        MedicalRecordDTO medicalRecord = medicalRecordServiceProxy.updateMedicalRecord(id, request);
         return ResponseEntity.ok(ApiResponse.success("Registro médico actualizado exitosamente", medicalRecord));
     }
 
@@ -172,8 +176,9 @@ public class MedicalRecordController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> deleteMedicalRecord(@PathVariable Long id) {
-        log.info("DELETE /api/medical-records/{} - Eliminando registro médico", id);
-        medicalRecordService.deleteMedicalRecord(id);
+        log.info("DELETE /api/medical-records/{} - Eliminando registro médico usando Proxy Pattern", id);
+        // Usar Proxy Pattern para control de acceso y auditoría
+        medicalRecordServiceProxy.deleteMedicalRecord(id);
         return ResponseEntity.ok(ApiResponse.success("Registro médico eliminado exitosamente", null));
     }
 

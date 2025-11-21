@@ -46,4 +46,20 @@ public class ValidationResult {
         }
         this.errors.add(error);
     }
+
+    public static ValidationResult error(String message) {
+        return ValidationResult.builder()
+                .valid(false)
+                .message(message)
+                .build();
+    }
+
+    // Métodos explícitos para compatibilidad
+    public boolean isValid() {
+        return valid;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 }

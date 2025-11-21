@@ -24,6 +24,12 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     List<Patient> findByIsActiveTrue();
 
     /**
+     * Buscar pacientes activos con propietario cargado (para reportes)
+     */
+    @Query("SELECT DISTINCT p FROM Patient p LEFT JOIN FETCH p.owner WHERE p.isActive = true ORDER BY p.name ASC")
+    List<Patient> findByIsActiveTrueWithOwner();
+
+    /**
      * Buscar paciente por número de microchip
      */
     Optional<Patient> findByMicrochipNumber(String microchipNumber);
