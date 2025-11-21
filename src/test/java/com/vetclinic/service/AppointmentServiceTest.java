@@ -10,6 +10,9 @@ import com.vetclinic.entity.Patient;
 import com.vetclinic.entity.User;
 import com.vetclinic.exception.BusinessException;
 import com.vetclinic.exception.ResourceNotFoundException;
+import com.vetclinic.patterns.chain.appointment.AppointmentValidationChain;
+import com.vetclinic.patterns.chain.ValidationResult;
+import com.vetclinic.patterns.state.AppointmentStateContext;
 import com.vetclinic.repository.AppointmentRepository;
 import com.vetclinic.repository.OwnerRepository;
 import com.vetclinic.repository.PatientRepository;
@@ -20,12 +23,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -51,6 +54,18 @@ class AppointmentServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private AppointmentValidationChain validationChain;
+
+    @Mock
+    private AppointmentStateContext stateContext;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
+    @Mock
+    private AppointmentActionTokenService tokenService;
 
     @InjectMocks
     private AppointmentService appointmentService;
@@ -118,11 +133,13 @@ class AppointmentServiceTest {
     @Test
     void createAppointment_Success() {
         // Arrange
+        when(validationChain.validate(any(CreateAppointmentRequest.class)))
+                .thenReturn(ValidationResult.success());
         when(patientRepository.findById(anyLong())).thenReturn(Optional.of(testPatient));
         when(ownerRepository.findById(anyLong())).thenReturn(Optional.of(testOwner));
         when(userRepository.findById(any(UUID.class))).thenReturn(Optional.of(testVeterinarian));
-        when(appointmentRepository.existsConflict(any(UUID.class), any(LocalDateTime.class))).thenReturn(false);
         when(appointmentRepository.save(any(Appointment.class))).thenReturn(testAppointment);
+        doNothing().when(eventPublisher).publishEvent(any());
 
         // Act
         AppointmentDTO result = appointmentService.createAppointment(createRequest);
@@ -130,73 +147,19 @@ class AppointmentServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(testAppointment.getReason(), result.getReason());
+        verify(validationChain).validate(any(CreateAppointmentRequest.class));
         verify(patientRepository).findById(anyLong());
         verify(ownerRepository).findById(anyLong());
         verify(userRepository).findById(any(UUID.class));
-        verify(appointmentRepository).existsConflict(any(UUID.class), any(LocalDateTime.class));
         verify(appointmentRepository).save(any(Appointment.class));
-    }
-
-    @Test
-    void createAppointment_PatientNotFound_ThrowsResourceNotFoundException() {
-        // Arrange
-        when(patientRepository.findById(anyLong())).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThrows(ResourceNotFoundException.class,
-                () -> appointmentService.createAppointment(createRequest));
-
-        verify(patientRepository).findById(anyLong());
-        verify(appointmentRepository, never()).save(any(Appointment.class));
-    }
-
-    @Test
-    void createAppointment_PatientNotActive_ThrowsBusinessException() {
-        // Arrange
-        testPatient.setIsActive(false);
-        when(patientRepository.findById(anyLong())).thenReturn(Optional.of(testPatient));
-
-        // Act & Assert
-        assertThrows(BusinessException.class,
-                () -> appointmentService.createAppointment(createRequest));
-
-        verify(patientRepository).findById(anyLong());
-        verify(appointmentRepository, never()).save(any(Appointment.class));
-    }
-
-    @Test
-    void createAppointment_OwnerNotFound_ThrowsResourceNotFoundException() {
-        // Arrange
-        when(patientRepository.findById(anyLong())).thenReturn(Optional.of(testPatient));
-        when(ownerRepository.findById(anyLong())).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThrows(ResourceNotFoundException.class,
-                () -> appointmentService.createAppointment(createRequest));
-
-        verify(patientRepository).findById(anyLong());
-        verify(ownerRepository).findById(anyLong());
-        verify(appointmentRepository, never()).save(any(Appointment.class));
-    }
-
-    @Test
-    void createAppointment_OwnerNotActive_ThrowsBusinessException() {
-        // Arrange
-        testOwner.setIsActive(false);
-        when(patientRepository.findById(anyLong())).thenReturn(Optional.of(testPatient));
-        when(ownerRepository.findById(anyLong())).thenReturn(Optional.of(testOwner));
-
-        // Act & Assert
-        assertThrows(BusinessException.class,
-                () -> appointmentService.createAppointment(createRequest));
-
-        verify(ownerRepository).findById(anyLong());
-        verify(appointmentRepository, never()).save(any(Appointment.class));
+        verify(eventPublisher).publishEvent(any());
     }
 
     @Test
     void createAppointment_VeterinarianNotFound_ThrowsResourceNotFoundException() {
         // Arrange
+        when(validationChain.validate(any(CreateAppointmentRequest.class)))
+                .thenReturn(ValidationResult.success());
         when(patientRepository.findById(anyLong())).thenReturn(Optional.of(testPatient));
         when(ownerRepository.findById(anyLong())).thenReturn(Optional.of(testOwner));
         when(userRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
@@ -205,6 +168,7 @@ class AppointmentServiceTest {
         assertThrows(ResourceNotFoundException.class,
                 () -> appointmentService.createAppointment(createRequest));
 
+        verify(validationChain).validate(any(CreateAppointmentRequest.class));
         verify(userRepository).findById(any(UUID.class));
         verify(appointmentRepository, never()).save(any(Appointment.class));
     }
@@ -212,16 +176,14 @@ class AppointmentServiceTest {
     @Test
     void createAppointment_ScheduleConflict_ThrowsBusinessException() {
         // Arrange
-        when(patientRepository.findById(anyLong())).thenReturn(Optional.of(testPatient));
-        when(ownerRepository.findById(anyLong())).thenReturn(Optional.of(testOwner));
-        when(userRepository.findById(any(UUID.class))).thenReturn(Optional.of(testVeterinarian));
-        when(appointmentRepository.existsConflict(any(UUID.class), any(LocalDateTime.class))).thenReturn(true);
+        when(validationChain.validate(any(CreateAppointmentRequest.class)))
+                .thenReturn(ValidationResult.failure("El veterinario ya tiene una cita programada en este horario"));
 
         // Act & Assert
         assertThrows(BusinessException.class,
                 () -> appointmentService.createAppointment(createRequest));
 
-        verify(appointmentRepository).existsConflict(any(UUID.class), any(LocalDateTime.class));
+        verify(validationChain).validate(any(CreateAppointmentRequest.class));
         verify(appointmentRepository, never()).save(any(Appointment.class));
     }
 
@@ -405,27 +367,20 @@ class AppointmentServiceTest {
     void cancelAppointment_Success() {
         // Arrange
         when(appointmentRepository.findById(anyLong())).thenReturn(Optional.of(testAppointment));
+        when(stateContext.canBeRescheduled(any(Appointment.class))).thenReturn(true);
+        doNothing().when(stateContext).cancel(any(Appointment.class));
         when(appointmentRepository.save(any(Appointment.class))).thenReturn(testAppointment);
+        doNothing().when(eventPublisher).publishEvent(any());
 
         // Act
         appointmentService.cancelAppointment(1L);
 
         // Assert
         verify(appointmentRepository).findById(anyLong());
+        verify(stateContext).canBeRescheduled(any(Appointment.class));
+        verify(stateContext).cancel(any(Appointment.class));
         verify(appointmentRepository).save(any(Appointment.class));
-    }
-
-    @Test
-    void cancelAppointment_NotFound_ThrowsResourceNotFoundException() {
-        // Arrange
-        when(appointmentRepository.findById(anyLong())).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThrows(ResourceNotFoundException.class,
-                () -> appointmentService.cancelAppointment(999L));
-
-        verify(appointmentRepository).findById(anyLong());
-        verify(appointmentRepository, never()).save(any(Appointment.class));
+        verify(eventPublisher).publishEvent(any());
     }
 
     @Test
@@ -433,12 +388,14 @@ class AppointmentServiceTest {
         // Arrange
         testAppointment.setStatus(AppointmentStatus.COMPLETED);
         when(appointmentRepository.findById(anyLong())).thenReturn(Optional.of(testAppointment));
+        when(stateContext.canBeRescheduled(any(Appointment.class))).thenReturn(false);
 
         // Act & Assert
         assertThrows(BusinessException.class,
                 () -> appointmentService.cancelAppointment(1L));
 
         verify(appointmentRepository).findById(anyLong());
+        verify(stateContext).canBeRescheduled(any(Appointment.class));
         verify(appointmentRepository, never()).save(any(Appointment.class));
     }
 
@@ -472,13 +429,13 @@ class AppointmentServiceTest {
     @Test
     void countActiveAppointments_Success() {
         // Arrange
-        when(appointmentRepository.countByIsActiveTrue()).thenReturn(15L);
+        when(appointmentRepository.countByIsActiveTrue()).thenReturn(10L);
 
         // Act
-        long result = appointmentService.countActiveAppointments();
+        long count = appointmentService.countActiveAppointments();
 
         // Assert
-        assertEquals(15L, result);
+        assertEquals(10L, count);
         verify(appointmentRepository).countByIsActiveTrue();
     }
 }

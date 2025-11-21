@@ -3,6 +3,7 @@ package com.vetclinic.controller;
 import com.vetclinic.dto.medicalrecord.CreateMedicalRecordRequest;
 import com.vetclinic.dto.medicalrecord.MedicalRecordDTO;
 import com.vetclinic.dto.medicalrecord.UpdateMedicalRecordRequest;
+import com.vetclinic.patterns.proxy.MedicalRecordServiceProxy;
 import com.vetclinic.service.MedicalRecordService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,9 @@ class MedicalRecordControllerTest {
 
     @Mock
     private MedicalRecordService medicalRecordService;
+
+    @Mock
+    private MedicalRecordServiceProxy medicalRecordServiceProxy;
 
     @InjectMocks
     private MedicalRecordController medicalRecordController;
@@ -80,11 +84,11 @@ class MedicalRecordControllerTest {
 
     @Test
     void testGetMedicalRecordById_Success() {
-        when(medicalRecordService.getMedicalRecordById(1L)).thenReturn(medicalRecordDTO);
+        when(medicalRecordServiceProxy.getMedicalRecordById(1L)).thenReturn(medicalRecordDTO);
 
         medicalRecordController.getMedicalRecordById(1L);
 
-        verify(medicalRecordService, times(1)).getMedicalRecordById(1L);
+        verify(medicalRecordServiceProxy, times(1)).getMedicalRecordById(1L);
     }
 
     @Test
@@ -142,20 +146,20 @@ class MedicalRecordControllerTest {
 
     @Test
     void testUpdateMedicalRecord_Success() {
-        when(medicalRecordService.updateMedicalRecord(anyLong(), any())).thenReturn(medicalRecordDTO);
+        when(medicalRecordServiceProxy.updateMedicalRecord(anyLong(), any())).thenReturn(medicalRecordDTO);
 
         medicalRecordController.updateMedicalRecord(1L, updateRequest);
 
-        verify(medicalRecordService, times(1)).updateMedicalRecord(eq(1L), any(UpdateMedicalRecordRequest.class));
+        verify(medicalRecordServiceProxy, times(1)).updateMedicalRecord(eq(1L), any(UpdateMedicalRecordRequest.class));
     }
 
     @Test
     void testDeleteMedicalRecord_Success() {
-        doNothing().when(medicalRecordService).deleteMedicalRecord(1L);
+        doNothing().when(medicalRecordServiceProxy).deleteMedicalRecord(1L);
 
         medicalRecordController.deleteMedicalRecord(1L);
 
-        verify(medicalRecordService, times(1)).deleteMedicalRecord(1L);
+        verify(medicalRecordServiceProxy, times(1)).deleteMedicalRecord(1L);
     }
 
     @Test

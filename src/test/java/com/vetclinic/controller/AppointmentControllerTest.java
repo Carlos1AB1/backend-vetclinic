@@ -3,6 +3,8 @@ package com.vetclinic.controller;
 import com.vetclinic.dto.appointment.AppointmentDTO;
 import com.vetclinic.dto.appointment.CreateAppointmentRequest;
 import com.vetclinic.dto.appointment.UpdateAppointmentRequest;
+import com.vetclinic.patterns.facade.ClinicaFacade;
+import com.vetclinic.service.AppointmentActionTokenService;
 import com.vetclinic.service.AppointmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +30,12 @@ class AppointmentControllerTest {
 
     @Mock
     private AppointmentService appointmentService;
+
+    @Mock
+    private ClinicaFacade clinicaFacade;
+
+    @Mock
+    private AppointmentActionTokenService tokenService;
 
     @InjectMocks
     private AppointmentController appointmentController;
@@ -60,12 +68,12 @@ class AppointmentControllerTest {
 
     @Test
     void testCreateAppointment_Success() {
-        when(appointmentService.createAppointment(any(CreateAppointmentRequest.class)))
+        when(clinicaFacade.agendarCita(any(CreateAppointmentRequest.class)))
                 .thenReturn(appointmentDTO);
 
         appointmentController.createAppointment(createRequest);
 
-        verify(appointmentService, times(1)).createAppointment(any(CreateAppointmentRequest.class));
+        verify(clinicaFacade, times(1)).agendarCita(any(CreateAppointmentRequest.class));
     }
 
     @Test
@@ -119,8 +127,31 @@ class AppointmentControllerTest {
     }
 
     @Test
+    void testGetAppointmentsByDateRange_Success() {
+        List<AppointmentDTO> appointments = Collections.singletonList(appointmentDTO);
+        LocalDateTime start = LocalDateTime.of(2024, 1, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2024, 12, 31, 23, 59);
+        when(appointmentService.getAppointmentsByDateRange(start, end)).thenReturn(appointments);
+
+        appointmentController.getAppointmentsByDateRange(start, end);
+
+        verify(appointmentService, times(1)).getAppointmentsByDateRange(start, end);
+    }
+
+    @Test
+    void testGetUpcomingAppointments_Success() {
+        List<AppointmentDTO> appointments = Collections.singletonList(appointmentDTO);
+        when(appointmentService.getUpcomingAppointments()).thenReturn(appointments);
+
+        appointmentController.getUpcomingAppointments();
+
+        verify(appointmentService, times(1)).getUpcomingAppointments();
+    }
+
+    @Test
     void testUpdateAppointment_Success() {
-        when(appointmentService.updateAppointment(anyLong(), any())).thenReturn(appointmentDTO);
+        when(appointmentService.updateAppointment(anyLong(), any(UpdateAppointmentRequest.class)))
+                .thenReturn(appointmentDTO);
 
         appointmentController.updateAppointment(1L, updateRequest);
 
@@ -129,11 +160,11 @@ class AppointmentControllerTest {
 
     @Test
     void testCancelAppointment_Success() {
-        doNothing().when(appointmentService).cancelAppointment(1L);
+        doNothing().when(clinicaFacade).cancelarCita(1L);
 
         appointmentController.cancelAppointment(1L);
 
-        verify(appointmentService, times(1)).cancelAppointment(1L);
+        verify(clinicaFacade, times(1)).cancelarCita(1L);
     }
 
     @Test
