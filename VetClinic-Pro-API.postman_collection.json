@@ -1,0 +1,2189 @@
+{
+	"info": {
+		"_postman_id": "vetclinic-pro-api-2024",
+		"name": "VetClinic Pro API - Complete Collection",
+		"description": "Colección completa de endpoints para VetClinic Pro Backend API\nIncluye todos los módulos: Auth, Usuarios, Propietarios, Pacientes, Citas, Registros Médicos, Prescripciones, Inventario, Servicios, Reportes, Agenda y Consentimientos",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080/api",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "patient_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "owner_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "appointment_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "01 - Authentication",
+			"item": [
+				{
+					"name": "Register Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.token) {",
+									"        pm.collectionVariables.set(\"jwt_token\", jsonData.data.token);",
+									"        pm.collectionVariables.set(\"user_id\", jsonData.data.userId);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@vetclinic.com\",\n  \"password\": \"Admin123!\",\n  \"firstName\": \"Admin\",\n  \"lastName\": \"VetClinic\",\n  \"phoneNumber\": \"+1234567890\",\n  \"role\": \"ADMIN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.token) {",
+									"        pm.collectionVariables.set(\"jwt_token\", jsonData.data.token);",
+									"        pm.collectionVariables.set(\"user_id\", jsonData.data.userId);",
+									"        console.log(\"Token guardado: \" + jsonData.data.token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@vetclinic.com\",\n  \"password\": \"Admin123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/auth/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Request Password Reset",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@vetclinic.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/request-password-reset",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"request-password-reset"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"oldPassword\": \"Admin123!\",\n  \"newPassword\": \"NewAdmin123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/change-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"change-password"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02 - Users",
+			"item": [
+				{
+					"name": "Get All Users (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/page?page=0&size=10&sortBy=firstName&sortDirection=ASC",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"page"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "firstName"
+								},
+								{
+									"key": "sortDirection",
+									"value": "ASC"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Users by Role",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/role/VETERINARIAN",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"role",
+								"VETERINARIAN"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/search?q=admin",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "admin"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Admin\",\n  \"lastName\": \"Updated\",\n  \"phoneNumber\": \"+9876543210\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate User",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03 - Owners",
+			"item": [
+				{
+					"name": "Create Owner",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set(\"owner_id\", jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Juan\",\n  \"lastName\": \"Pérez\",\n  \"email\": \"juan.perez@email.com\",\n  \"phoneNumber\": \"+1234567890\",\n  \"address\": \"Calle Principal 123\",\n  \"city\": \"Ciudad\",\n  \"documentType\": \"DNI\",\n  \"documentNumber\": \"12345678\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/owners",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"owners"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Owners (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/owners/page?page=0&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"owners",
+								"page"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Owner by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/owners/{{owner_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"owners",
+								"{{owner_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Owners",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/owners/search?q=Juan",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"owners",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "Juan"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Owner",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phoneNumber\": \"+9876543210\",\n  \"address\": \"Calle Nueva 456\",\n  \"city\": \"Ciudad Actualizada\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/owners/{{owner_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"owners",
+								"{{owner_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Owner",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/owners/{{owner_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"owners",
+								"{{owner_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "04 - Patients",
+			"item": [
+				{
+					"name": "Create Patient",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set(\"patient_id\", jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Max\",\n  \"species\": \"Perro\",\n  \"breed\": \"Golden Retriever\",\n  \"birthDate\": \"2020-05-15\",\n  \"gender\": \"MALE\",\n  \"color\": \"Dorado\",\n  \"weight\": 30.5,\n  \"ownerId\": {{owner_id}},\n  \"allergies\": \"Ninguna conocida\",\n  \"specialConditions\": \"Ninguna\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/patients",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"patients"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Patients (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/patients/page?page=0&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"patients",
+								"page"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Patient by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/patients/{{patient_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"patients",
+								"{{patient_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Patients by Owner",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/patients/owner/{{owner_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"patients",
+								"owner",
+								"{{owner_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Patients",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/patients/search?q=Max",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"patients",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "Max"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Patient",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"weight\": 32.0,\n  \"allergies\": \"Alergia al pollo\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/patients/{{patient_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"patients",
+								"{{patient_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Patient",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/patients/{{patient_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"patients",
+								"{{patient_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "05 - Appointments",
+			"item": [
+				{
+					"name": "Create Appointment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set(\"appointment_id\", jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"patientId\": {{patient_id}},\n  \"veterinarianId\": \"{{user_id}}\",\n  \"ownerId\": {{owner_id}},\n  \"scheduledDate\": \"2024-12-25T10:00:00\",\n  \"appointmentType\": \"CONSULTATION\",\n  \"reason\": \"Chequeo general\",\n  \"notes\": \"Primera consulta del año\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/appointments",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"appointments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Appointments (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/appointments/page?page=0&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"appointments",
+								"page"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Appointment by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/appointments/{{appointment_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"appointments",
+								"{{appointment_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Appointments by Patient",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/appointments/patient/{{patient_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"appointments",
+								"patient",
+								"{{patient_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Today Appointments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/appointments/today?veterinarianId={{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"appointments",
+								"today"
+							],
+							"query": [
+								{
+									"key": "veterinarianId",
+									"value": "{{user_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Upcoming Appointments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/appointments/upcoming",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"appointments",
+								"upcoming"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Appointment",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"scheduledDate\": \"2024-12-25T14:00:00\",\n  \"status\": \"CONFIRMED\",\n  \"notes\": \"Cambio de horario confirmado\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/appointments/{{appointment_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"appointments",
+								"{{appointment_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Appointment",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"Paciente enfermo\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/appointments/{{appointment_id}}/cancel",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"appointments",
+								"{{appointment_id}}",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "06 - Medical Records",
+			"item": [
+				{
+					"name": "Create Medical Record",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"patientId\": {{patient_id}},\n  \"veterinarianId\": \"{{user_id}}\",\n  \"appointmentId\": {{appointment_id}},\n  \"diagnosis\": \"Gastritis leve\",\n  \"treatment\": \"Dieta blanda y medicación\",\n  \"symptoms\": \"Vómitos ocasionales\",\n  \"vitalSigns\": \"Temperatura: 38.5°C, Frecuencia cardíaca: 100 lpm\",\n  \"weight\": 32.0,\n  \"temperature\": 38.5,\n  \"notes\": \"Paciente estable\",\n  \"followUpRequired\": true,\n  \"followUpDate\": \"2024-12-30T10:00:00\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/medical-records",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"medical-records"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Medical Records (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/medical-records/page?page=0&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"medical-records",
+								"page"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Medical Records by Patient",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/medical-records/patient/{{patient_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"medical-records",
+								"patient",
+								"{{patient_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Records Requiring Follow-up",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/medical-records/follow-up",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"medical-records",
+								"follow-up"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search by Diagnosis",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/medical-records/search?diagnosis=Gastritis",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"medical-records",
+								"search"
+							],
+							"query": [
+								{
+									"key": "diagnosis",
+									"value": "Gastritis"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "07 - Prescriptions",
+			"item": [
+				{
+					"name": "Create Prescription",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"medicalRecordId\": 1,\n  \"patientId\": {{patient_id}},\n  \"medicationName\": \"Omeprazol\",\n  \"dosage\": \"20mg\",\n  \"frequency\": \"Cada 12 horas\",\n  \"duration\": \"7 días\",\n  \"instructions\": \"Administrar antes de las comidas\",\n  \"startDate\": \"2024-11-21T00:00:00\",\n  \"endDate\": \"2024-11-28T00:00:00\",\n  \"notes\": \"Evitar comidas grasosas\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/prescriptions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"prescriptions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Prescriptions (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/prescriptions/page?page=0&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"prescriptions",
+								"page"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Prescriptions by Patient",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/prescriptions/patient/{{patient_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"prescriptions",
+								"patient",
+								"{{patient_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Active Prescriptions by Patient",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/prescriptions/patient/{{patient_id}}/active",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"prescriptions",
+								"patient",
+								"{{patient_id}}",
+								"active"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Prescriptions by Medication",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/prescriptions/search?medication=Omeprazol",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"prescriptions",
+								"search"
+							],
+							"query": [
+								{
+									"key": "medication",
+									"value": "Omeprazol"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Export Prescription to PDF",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/prescriptions/1/export?format=PDF",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"prescriptions",
+								"1",
+								"export"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "PDF"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Export Prescription to Excel",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/prescriptions/1/export?format=EXCEL",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"prescriptions",
+								"1",
+								"export"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "EXCEL"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "08 - Inventory (RF019)",
+			"item": [
+				{
+					"name": "Create Inventory Item",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Vacuna Antirrábica\",\n  \"description\": \"Vacuna contra la rabia para perros y gatos\",\n  \"category\": \"MEDICATION\",\n  \"sku\": \"VAC-RABIES-001\",\n  \"quantity\": 50,\n  \"minStockLevel\": 10,\n  \"maxStockLevel\": 100,\n  \"unitPrice\": 25.50,\n  \"supplier\": \"Laboratorios VetPharma\",\n  \"expirationDate\": \"2025-12-31\",\n  \"location\": \"Refrigerador A - Estante 2\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/inventory",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inventory"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Inventory Items (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory/page?page=0&size=10&sortBy=name&sortDirection=ASC",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inventory",
+								"page"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "name"
+								},
+								{
+									"key": "sortDirection",
+									"value": "ASC"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Inventory Item by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inventory",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Inventory Items",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory/search?q=Vacuna&page=0&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inventory",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "Vacuna"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Items by Category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory/category/MEDICATION?page=0&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inventory",
+								"category",
+								"MEDICATION"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Low Stock Items",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory/low-stock",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inventory",
+								"low-stock"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Out of Stock Items",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory/out-of-stock",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inventory",
+								"out-of-stock"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Expiring Soon Items",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory/expiring-soon",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inventory",
+								"expiring-soon"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Expired Items",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory/expired",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inventory",
+								"expired"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Inventory Item",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quantity\": 45,\n  \"unitPrice\": 26.00,\n  \"location\": \"Refrigerador B - Estante 1\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/inventory/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inventory",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Stock (Add/Subtract)",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory/1/stock?quantityChange=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inventory",
+								"1",
+								"stock"
+							],
+							"query": [
+								{
+									"key": "quantityChange",
+									"value": "10",
+									"description": "Usar número positivo para agregar, negativo para restar"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Inventory Item",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inventory",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Count Active Inventory Items",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory/count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inventory",
+								"count"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Count Low Stock Items",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventory/low-stock/count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inventory",
+								"low-stock",
+								"count"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "09 - Services (RF017)",
+			"item": [
+				{
+					"name": "Create Service",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Consulta General\",\n  \"description\": \"Consulta veterinaria general de rutina\",\n  \"category\": \"CONSULTATION\",\n  \"price\": 50.00,\n  \"durationMinutes\": 30,\n  \"requiresAppointment\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/services",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"services"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Services (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/services/page?page=0&size=10&sortBy=name&sortDirection=ASC",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"services",
+								"page"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "name"
+								},
+								{
+									"key": "sortDirection",
+									"value": "ASC"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Active Services",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/services",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"services"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Service by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/services/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"services",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Services",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/services/search?q=Consulta&page=0&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"services",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "Consulta"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Services by Category (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/services/category/CONSULTATION?page=0&size=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"services",
+								"category",
+								"CONSULTATION"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Services by Category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/services/category/CONSULTATION/all",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"services",
+								"category",
+								"CONSULTATION",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Service",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"price\": 55.00,\n  \"durationMinutes\": 45\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/services/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"services",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Service",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/services/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"services",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Count Active Services",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/services/count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"services",
+								"count"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "10 - Agenda Views (RF010)",
+			"item": [
+				{
+					"name": "Get Agenda View (Generic)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/agenda/view?type=DAILY&date=2024-11-21&veterinarianId={{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"agenda",
+								"view"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "DAILY",
+									"description": "DAILY, WEEKLY, MONTHLY"
+								},
+								{
+									"key": "date",
+									"value": "2024-11-21"
+								},
+								{
+									"key": "veterinarianId",
+									"value": "{{user_id}}",
+									"description": "Opcional - filtra por veterinario"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Daily View",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/agenda/daily?date=2024-11-21&veterinarianId={{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"agenda",
+								"daily"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2024-11-21"
+								},
+								{
+									"key": "veterinarianId",
+									"value": "{{user_id}}",
+									"description": "Opcional"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Weekly View",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/agenda/weekly?date=2024-11-21&veterinarianId={{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"agenda",
+								"weekly"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2024-11-21"
+								},
+								{
+									"key": "veterinarianId",
+									"value": "{{user_id}}",
+									"description": "Opcional"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Monthly View",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/agenda/monthly?date=2024-11-21&veterinarianId={{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"agenda",
+								"monthly"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2024-11-21"
+								},
+								{
+									"key": "veterinarianId",
+									"value": "{{user_id}}",
+									"description": "Opcional"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "11 - Reports (RF015)",
+			"item": [
+				{
+					"name": "Generate Report (Generic)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/reports/generate?type=APPOINTMENTS&startDate=2024-01-01T00:00:00&endDate=2024-12-31T23:59:59",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"generate"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "APPOINTMENTS",
+									"description": "APPOINTMENTS, PATIENTS, SERVICES"
+								},
+								{
+									"key": "startDate",
+									"value": "2024-01-01T00:00:00",
+									"description": "Opcional - ISO 8601 format"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-12-31T23:59:59",
+									"description": "Opcional - ISO 8601 format"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Appointments Report",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/reports/appointments?startDate=2024-01-01T00:00:00&endDate=2024-12-31T23:59:59",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"appointments"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-01T00:00:00",
+									"description": "Opcional"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-12-31T23:59:59",
+									"description": "Opcional"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Patients Report",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/reports/patients",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"patients"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Services Report",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/reports/services",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"services"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "12 - Informed Consents (RF016)",
+			"item": [
+				{
+					"name": "Create Informed Consent",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"patientId\": {{patient_id}},\n  \"ownerId\": {{owner_id}},\n  \"veterinarianId\": \"{{user_id}}\",\n  \"appointmentId\": {{appointment_id}},\n  \"procedureType\": \"SURGERY\",\n  \"procedureDescription\": \"Castración quirúrgica bajo anestesia general\",\n  \"risks\": \"Riesgos asociados a la anestesia general, hemorragia, infección\",\n  \"benefits\": \"Prevención de enfermedades reproductivas, control poblacional\",\n  \"alternatives\": \"Métodos no quirúrgicos de control reproductivo\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/informed-consents",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"informed-consents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Informed Consents (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/informed-consents/page?page=0&size=10&sortBy=createdAt&sortDirection=DESC",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"informed-consents",
+								"page"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortDirection",
+									"value": "DESC"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Informed Consent by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/informed-consents/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"informed-consents",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Informed Consents by Patient",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/informed-consents/patient/{{patient_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"informed-consents",
+								"patient",
+								"{{patient_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Pending Consents",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/informed-consents/pending",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"informed-consents",
+								"pending"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sign Consent",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/informed-consents/1/sign?signature=BASE64_SIGNATURE_DATA",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"informed-consents",
+								"1",
+								"sign"
+							],
+							"query": [
+								{
+									"key": "signature",
+									"value": "BASE64_SIGNATURE_DATA",
+									"description": "Firma digital en Base64"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Informed Consent",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/informed-consents/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"informed-consents",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
+
