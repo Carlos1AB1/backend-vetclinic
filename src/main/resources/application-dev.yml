@@ -2,12 +2,27 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/vetclinic_db
     username: postgres
-    password: postgres
-  
+    password: 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+  
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:archudeluxe2@gmail.com}
+    password: ${MAIL_PASSWORD:tdqqjfkmhudylkyg}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+    test-connection: false
   
   devtools:
     restart:
