@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Repositorio para la entidad Owner
@@ -66,4 +67,7 @@ public interface OwnerRepository extends JpaRepository<Owner, Long> {
      * Contar propietarios activos
      */
     long countByIsActiveTrue();
+
+    Optional<Owner> findByUserIdAndIsActiveTrue(UUID userId);
+
 }

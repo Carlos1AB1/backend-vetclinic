@@ -28,7 +28,9 @@ public class OwnerDTO {
     private String documentNumber;
     private String notes;
     private Boolean isActive;
-    private Integer totalPatients; // Número de mascotas
+    private Integer totalPatients;
+    private String username;
+    private String userId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

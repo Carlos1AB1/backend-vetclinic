@@ -150,6 +150,22 @@ public class DataInitializer implements CommandLineRunner {
         );
 
         log.info("Roles created successfully");
+
+        // OWNER role
+        Set<Permission> ownerPermissions = new HashSet<>();
+        ownerPermissions.add(findPermissionByName("APPOINTMENT_READ"));
+        ownerPermissions.add(findPermissionByName("APPOINTMENT_WRITE"));
+        ownerPermissions.add(findPermissionByName("PATIENT_READ"));
+        ownerPermissions.add(findPermissionByName("PATIENT_WRITE"));
+
+        createRoleIfNotExists(
+                "OWNER",
+                "Propietario de mascotas con acceso al portal de clientes",
+                ownerPermissions,
+                true
+        );
+
+        log.info("Roles created successfully");
     }
 
     private void createRoleIfNotExists(String name, String description, Set<Permission> permissions, boolean isSystemRole) {

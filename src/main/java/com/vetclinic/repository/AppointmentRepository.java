@@ -28,6 +28,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
      * Encontrar citas por paciente
      */
     List<Appointment> findByPatientIdAndIsActiveTrueOrderByScheduledDateDesc(Long patientId);
+    List<Appointment> findByOwnerIdOrderByScheduledDateDesc(Long ownerId);
 
     /**
      * Encontrar citas por propietario
@@ -48,7 +49,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
      * Encontrar citas por rango de fechas
      */
     @Query("SELECT a FROM Appointment a WHERE a.scheduledDate BETWEEN :startDate AND :endDate AND a.isActive = true ORDER BY a.scheduledDate ASC")
-    List<Appointment> findByDateRange(@Param("startDate") LocalDateTime startDate, 
+    List<Appointment> findByDateRange(@Param("startDate") LocalDateTime startDate,
                                      @Param("endDate") LocalDateTime endDate);
 
     /**
@@ -59,7 +60,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
            "LEFT JOIN FETCH a.owner " +
            "LEFT JOIN FETCH a.veterinarian " +
            "WHERE a.scheduledDate BETWEEN :startDate AND :endDate AND a.isActive = true ORDER BY a.scheduledDate ASC")
-    List<Appointment> findByDateRangeWithRelations(@Param("startDate") LocalDateTime startDate, 
+    List<Appointment> findByDateRangeWithRelations(@Param("startDate") LocalDateTime startDate,
                                                    @Param("endDate") LocalDateTime endDate);
 
     /**

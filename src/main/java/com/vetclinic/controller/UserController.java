@@ -37,7 +37,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST', 'OWNER')")  // 👈 CAMBIAR AQUÍ
     @Operation(
         summary = "Listar todos los usuarios",
         description = "Obtiene una lista paginada de todos los usuarios del sistema"
@@ -98,7 +98,7 @@ public class UserController {
     }
 
     @GetMapping("/username/{username}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST', 'OWNER')")
     @Operation(
         summary = "Obtener usuario por nombre de usuario",
         description = "Obtiene los detalles de un usuario específico por su username"

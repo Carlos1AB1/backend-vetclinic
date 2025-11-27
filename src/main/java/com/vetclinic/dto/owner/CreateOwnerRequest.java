@@ -43,11 +43,20 @@ public class CreateOwnerRequest {
     private String postalCode;
 
     @Size(max = 20, message = "El tipo de documento no puede exceder 20 caracteres")
-    private String documentType; // DNI, Pasaporte, etc.
+    private String documentType;
 
     @Size(max = 50, message = "El número de documento no puede exceder 50 caracteres")
     private String documentNumber;
 
     @Size(max = 500, message = "Las notas no pueden exceder 500 caracteres")
     private String notes;
+
+    @NotBlank(message = "El nombre de usuario es obligatorio")
+    @Size(min = 4, max = 50, message = "El nombre de usuario debe tener entre 4 y 50 caracteres")
+    @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "El nombre de usuario solo puede contener letras, números y guiones bajos")
+    private String username;
+
+    @NotBlank(message = "La contraseña es obligatoria")
+    @Size(min = 6, max = 100, message = "La contraseña debe tener entre 6 y 100 caracteres")
+    private String password;
 }

@@ -42,10 +42,10 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
-                .exceptionHandling(exception -> 
+                .exceptionHandling(exception ->
                         exception.authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 )
-                .sessionManagement(session -> 
+                .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
@@ -57,9 +57,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/appointments/{id}/confirm").permitAll()
                         .requestMatchers(HttpMethod.GET, "/appointments/{id}/cancel-reminder").permitAll()
                         .requestMatchers(HttpMethod.POST, "/appointments/{id}/reschedule").permitAll()
-                        
-                        // Admin only endpoints
+
+                        // User endpoints - Specific endpoints first, then admin-only
+                        .requestMatchers(HttpMethod.GET, "/users/username/**").hasAnyRole("ADMIN", "VETERINARIAN", "RECEPTIONIST", "OWNER")
+                        .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("ADMIN", "VETERINARIAN", "RECEPTIONIST", "OWNER")
                         .requestMatchers("/users/**").hasRole("ADMIN")
+
                         .requestMatchers("/roles/**").hasRole("ADMIN")
                         // DELETE endpoints - Admin and Veterinarian only
                         .requestMatchers(HttpMethod.DELETE, "/patients/**").hasAnyRole("ADMIN", "VETERINARIAN")
@@ -67,7 +70,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/appointments/**").hasAnyRole("ADMIN", "VETERINARIAN")
                         .requestMatchers(HttpMethod.DELETE, "/medical-records/**").hasAnyRole("ADMIN", "VETERINARIAN")
                         .requestMatchers(HttpMethod.DELETE, "/inventory/**").hasAnyRole("ADMIN", "VETERINARIAN")
-                        
+
                         // Authenticated endpoints
                         .anyRequest().authenticated()
                 )

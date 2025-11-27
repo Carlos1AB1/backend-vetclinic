@@ -4,6 +4,8 @@ import com.vetclinic.dto.ApiResponse;
 import com.vetclinic.dto.owner.CreateOwnerRequest;
 import com.vetclinic.dto.owner.OwnerDTO;
 import com.vetclinic.dto.owner.UpdateOwnerRequest;
+import com.vetclinic.entity.Owner;
+import com.vetclinic.repository.UserRepository;
 import com.vetclinic.service.OwnerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,6 +25,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Controlador REST para la gestión de propietarios
@@ -37,6 +40,7 @@ import java.util.List;
 public class OwnerController {
 
     private final OwnerService ownerService;
+    private final UserRepository userRepository;
 
     /**
      * Crear un nuevo propietario
@@ -164,5 +168,19 @@ public class OwnerController {
         log.info("GET /api/owners/city/{} - Obteniendo propietarios por ciudad", city);
         List<OwnerDTO> owners = ownerService.getOwnersByCity(city);
         return ResponseEntity.ok(ApiResponse.success("Propietarios obtenidos exitosamente", owners));
+    }
+
+    /**
+     * Obtener propietario por User ID
+     * GET /api/owners/user/{userId}
+     */
+    @GetMapping("/user/{userId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST', 'OWNER')")
+    @Operation(summary = "Obtener propietario por User ID", description = "Obtiene un propietario por su User ID")
+    public ResponseEntity<ApiResponse<OwnerDTO>> getOwnerByUserId(@PathVariable UUID userId) {
+        log.info("GET /api/owners/user/{} - Obteniendo propietario", userId);
+        Owner owner = ownerService.getOwnerByUserId(userId.toString());
+        OwnerDTO dto = ownerService.getOwnerById(owner.getId());
+        return ResponseEntity.ok(ApiResponse.success("Propietario obtenido exitosamente", dto));
     }
 }
