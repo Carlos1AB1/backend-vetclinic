@@ -11,10 +11,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * Entidad Owner (Propietario)
- * Representa a los dueños de las mascotas
+ * Entidad para representar propietarios de mascotas
  */
 @Entity
 @Table(name = "owners")
@@ -28,67 +28,61 @@ public class Owner {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "last_name", nullable = false, length = 100)
     private String lastName;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(nullable = false, length = 20)
+    @Column(name = "phone", nullable = false, length = 20)
     private String phone;
 
-    @Column(length = 20)
+    @Column(name = "alternative_phone", length = 20)
     private String alternativePhone;
 
-    @Column(length = 200)
+    @Column(name = "address", length = 200)
     private String address;
 
-    @Column(length = 100)
+    @Column(name = "city", length = 100)
     private String city;
 
-    @Column(length = 20)
+    @Column(name = "postal_code", length = 20)
     private String postalCode;
 
-    @Column(length = 20)
-    private String documentType; // DNI, Pasaporte, etc.
+    @Column(name = "document_type", length = 20)
+    private String documentType;
 
-    @Column(length = 50)
+    @Column(name = "document_number", length = 50)
     private String documentNumber;
 
-    @Column(length = 500)
+    @Column(name = "notes", length = 500)
     private String notes;
 
-    @Column(nullable = false)
+    @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // Relación con User
+    @Column(name = "user_id")
+    private UUID userId;
+
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Patient> patients = new ArrayList<>();
 
     @CreatedDate
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Método helper para obtener nombre completo
+    /**
+     * Obtener el nombre completo
+     */
     public String getFullName() {
         return firstName + " " + lastName;
-    }
-
-    // Método helper para agregar paciente
-    public void addPatient(Patient patient) {
-        patients.add(patient);
-        patient.setOwner(this);
-    }
-
-    // Método helper para remover paciente
-    public void removePatient(Patient patient) {
-        patients.remove(patient);
-        patient.setOwner(null);
     }
 }

@@ -38,6 +38,7 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
      * Buscar pacientes por propietario
      */
     List<Patient> findByOwnerId(Long ownerId);
+    List<Patient> findByOwnerIdAndIsActiveTrue(Long ownerId);
 
     /**
      * Buscar pacientes por especie
