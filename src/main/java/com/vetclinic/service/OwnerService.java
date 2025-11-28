@@ -9,11 +9,13 @@ import com.vetclinic.entity.User;
 import com.vetclinic.exception.BadRequestException;
 import com.vetclinic.exception.DuplicateResourceException;
 import com.vetclinic.exception.ResourceNotFoundException;
+import com.vetclinic.patterns.adapter.EmailServiceAdapter;
 import com.vetclinic.repository.OwnerRepository;
 import com.vetclinic.repository.RoleRepository;
 import com.vetclinic.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,6 +40,11 @@ public class OwnerService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailServiceAdapter emailServiceAdapter;
+    private final EmailTemplateService emailTemplateService;
+
+    @Value("${app.frontend-url:http://localhost:5173}")
+    private String frontendUrl;
 
     /**
      * Crear un nuevo propietario con usuario asociado
@@ -107,7 +114,32 @@ public class OwnerService {
         Owner savedOwner = ownerRepository.save(owner);
         log.info("Propietario creado exitosamente con ID: {}", savedOwner.getId());
 
+        // Enviar email de bienvenida al propietario
+        try {
+            sendOwnerWelcomeEmail(savedOwner, savedUser, request.getPassword());
+        } catch (Exception e) {
+            log.error("Error al enviar email de bienvenida al propietario: {}", savedOwner.getEmail(), e);
+            // No lanzar excepción para no fallar la creación del propietario
+        }
+
         return mapToDTO(savedOwner, savedUser);
+    }
+
+    /**
+     * Enviar email de bienvenida al propietario
+     */
+    private void sendOwnerWelcomeEmail(Owner owner, User user, String password) {
+        String subject = "¡Bienvenido a VetClinic Pro!";
+        String loginUrl = frontendUrl + "/login";
+        String htmlBody = emailTemplateService.getOwnerWelcomeEmailTemplate(
+                owner.getFullName(),
+                user.getUsername(),
+                password,
+                loginUrl
+        );
+
+        emailServiceAdapter.sendHtmlEmail(owner.getEmail(), subject, htmlBody);
+        log.info("Email de bienvenida enviado al propietario: {}", owner.getEmail());
     }
 
     /**
@@ -230,26 +262,34 @@ public class OwnerService {
     }
 
     /**
-     * Eliminar propietario (soft delete)
+     * Eliminar propietario (hard delete)
      */
+    @Transactional
     public void deleteOwner(Long id) {
         log.info("Eliminando propietario con ID: {}", id);
 
         Owner owner = ownerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Propietario no encontrado con ID: " + id));
 
-        owner.setIsActive(false);
-        ownerRepository.save(owner);
+        // Verificar si tiene pacientes asociados
+        if (!owner.getPatients().isEmpty()) {
+            throw new IllegalStateException("No se puede eliminar el propietario porque tiene " + 
+                owner.getPatients().size() + " paciente(s) asociado(s). " +
+                "Primero debe eliminar o transferir los pacientes.");
+        }
 
-        // Desactivar usuario asociado
+        // Eliminar usuario asociado primero
         if (owner.getUserId() != null) {
             userRepository.findById(owner.getUserId()).ifPresent(user -> {
-                user.setIsActive(false);
-                userRepository.save(user);
+                log.info("Eliminando usuario asociado con ID: {}", user.getId());
+                userRepository.delete(user);
             });
         }
 
-        log.info("Propietario eliminado exitosamente");
+        // Eliminar propietario de la base de datos
+        ownerRepository.delete(owner);
+        
+        log.info("Propietario eliminado exitosamente de la base de datos");
     }
 
     /**

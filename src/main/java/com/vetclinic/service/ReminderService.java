@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -32,6 +33,9 @@ public class ReminderService {
     private final Reminder24HoursStrategy reminder24HoursStrategy;
     private final Reminder1HourStrategy reminder1HourStrategy;
     private final AppointmentActionTokenService tokenService;
+    private final EmailTemplateService emailTemplateService;
+    
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy 'a las' HH:mm");
 
     /**
      * Enviar recordatorios automáticos cada hora
@@ -79,10 +83,10 @@ public class ReminderService {
             }
 
             String subject = String.format("Recordatorio de Cita - %s horas antes", strategy.getHoursBefore());
-            String message = buildReminderMessage(appointment, strategy);
+            String htmlBody = buildReminderHtmlMessage(appointment, strategy);
 
-            emailServiceAdapter.sendEmail(owner.getEmail(), subject, message);
-            log.info("Recordatorio {} enviado para cita ID: {} a {}", 
+            emailServiceAdapter.sendHtmlEmail(owner.getEmail(), subject, htmlBody);
+            log.info("Recordatorio HTML {} enviado para cita ID: {} a {}", 
                 strategy.getReminderType(), appointment.getId(), owner.getEmail());
 
         } catch (Exception e) {
@@ -91,34 +95,18 @@ public class ReminderService {
     }
 
     /**
-     * Construir mensaje de recordatorio con enlaces de acción
+     * Construir mensaje HTML de recordatorio con enlaces de acción
      */
-    private String buildReminderMessage(Appointment appointment, ReminderStrategy strategy) {
+    private String buildReminderHtmlMessage(Appointment appointment, ReminderStrategy strategy) {
         // Generar URLs de acción con tokens seguros
         String confirmUrl = tokenService.generateActionUrl(appointment.getId(), ActionType.CONFIRM);
         String cancelUrl = tokenService.generateActionUrl(appointment.getId(), ActionType.CANCEL);
         String rescheduleUrl = tokenService.generateActionUrl(appointment.getId(), ActionType.RESCHEDULE);
 
-        return String.format(
-            "Estimado/a %s,\n\n" +
-            "Este es un recordatorio de su cita programada.\n\n" +
-            "Detalles de la cita:\n" +
-            "- Paciente: %s\n" +
-            "- Fecha y hora: %s\n" +
-            "- Tipo: %s\n" +
-            "- Veterinario: %s\n\n" +
-            "Faltan %d horas para su cita.\n\n" +
-            "Puede gestionar su cita directamente desde este email:\n\n" +
-            "✓ Confirmar cita: %s\n" +
-            "✗ Cancelar cita: %s\n" +
-            "↻ Reprogramar cita: %s\n\n" +
-            "Nota: Estos enlaces son válidos por 48 horas y solo pueden usarse una vez.\n\n" +
-            "Si tiene alguna pregunta, por favor contáctenos.\n\n" +
-            "Saludos,\n" +
-            "VetClinic Pro",
+        return emailTemplateService.getAppointmentReminderEmailTemplate(
             appointment.getOwner().getFullName(),
             appointment.getPatient().getName(),
-            appointment.getScheduledDate(),
+            appointment.getScheduledDate().format(DATE_FORMATTER),
             appointment.getAppointmentType(),
             appointment.getVeterinarian().getFullName(),
             strategy.getHoursBefore(),

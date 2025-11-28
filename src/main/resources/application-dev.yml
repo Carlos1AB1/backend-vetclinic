@@ -11,8 +11,11 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME:archudeluxe2@gmail.com}
-    password: ${MAIL_PASSWORD:tdqqjfkmhudylkyg}
+    # ⚠️ Las credenciales se obtienen del archivo .env (cargado automáticamente)
+    # O de variables de entorno del sistema
+    # NO poner credenciales aquí - usar archivo .env
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -26,7 +29,7 @@ spring:
   
   devtools:
     restart:
-      enabled: true
+      enabled: false  # Deshabilitado temporalmente para evitar problemas de classloader
 
 logging:
   level:

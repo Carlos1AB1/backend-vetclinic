@@ -3,14 +3,17 @@ package com.vetclinic.patterns.observer;
 import com.vetclinic.entity.Appointment;
 import com.vetclinic.entity.Owner;
 import com.vetclinic.patterns.adapter.EmailServiceAdapter;
-import com.vetclinic.patterns.decorator.AuditNotifierDecorator;
-import com.vetclinic.patterns.decorator.BaseNotifier;
-import com.vetclinic.patterns.decorator.Notifier;
+import com.vetclinic.service.EmailTemplateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+
+import java.time.format.DateTimeFormatter;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Observer Pattern
@@ -22,23 +25,45 @@ import org.springframework.stereotype.Component;
 public class AppointmentNotificationObserver {
 
     private final EmailServiceAdapter emailServiceAdapter;
-    private final BaseNotifier baseNotifier;
-
-    /**
-     * Crear notificador con decoradores usando Decorator Pattern
-     */
-    private Notifier createNotifier() {
-        // Decorar con auditoría
-        return new AuditNotifierDecorator(baseNotifier);
-    }
+    private final EmailTemplateService emailTemplateService;
+    
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy 'a las' HH:mm");
+    
+    // Set para evitar envíos duplicados (protección adicional) - STATIC para compartir entre todas las instancias
+    private static final Set<String> processedEvents = ConcurrentHashMap.newKeySet();
+    
+    // Contador para debugging
+    private static final AtomicInteger eventCounter = new AtomicInteger(0);
 
     @EventListener
     @Async
     public void handleAppointmentEvent(AppointmentEvent event) {
         Appointment appointment = event.getAppointment();
         AppointmentEvent.AppointmentEventType eventType = event.getEventType();
+        
+        // Crear clave única para este evento (cita ID + tipo de evento + timestamp aproximado)
+        String eventKey = appointment.getId() + "_" + eventType.name();
+        int counter = eventCounter.incrementAndGet();
 
-        log.info("Procesando evento de cita: {} para cita ID: {}", eventType, appointment.getId());
+        log.error("═══════════════════════════════════════════════════════════════");
+        log.error("📧 OBSERVER RECIBIÓ EVENTO #{}", counter);
+        log.error("   Tipo: {}", eventType);
+        log.error("   Cita ID: {}", appointment.getId());
+        log.error("   Thread: {}", Thread.currentThread().getName());
+        log.error("   Source: {}", event.getSource().getClass().getSimpleName());
+        log.error("   Key: {}", eventKey);
+        log.error("   Ya procesado?: {}", processedEvents.contains(eventKey));
+        log.error("═══════════════════════════════════════════════════════════════");
+
+        // Protección contra duplicados - usar computeIfAbsent para operación atómica
+        boolean isNew = processedEvents.add(eventKey);
+        
+        if (!isNew) {
+            log.error("❌❌❌ EVENTO DUPLICADO DETECTADO - Ya se procesó: {} - IGNORANDO ENVÍO ❌❌❌", eventKey);
+            return;
+        }
+        
+        log.error("✓✓✓ Evento NUEVO - Marcado como procesado: {} ✓✓✓", eventKey);
 
         try {
             switch (eventType) {
@@ -50,60 +75,49 @@ public class AppointmentNotificationObserver {
             }
         } catch (Exception e) {
             log.error("Error al enviar notificación para cita ID: {}", appointment.getId(), e);
+            // Si hay error, remover de processed para permitir reintento
+            processedEvents.remove(eventKey);
         }
     }
 
     private void sendAppointmentCreatedNotification(Appointment appointment) {
+        log.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        log.error("📨 ENVIANDO CORREO DE CITA CREADA");
+        log.error("   Cita ID: {}", appointment.getId());
+        log.error("   Thread: {}", Thread.currentThread().getName());
+        
         Owner owner = appointment.getOwner();
         if (owner != null && owner.getEmail() != null) {
+            log.error("   Email destino: {}", owner.getEmail());
             String subject = "Cita Creada - VetClinic Pro";
-            String body = String.format(
-                "Estimado/a %s,\n\n" +
-                "Su cita ha sido creada exitosamente.\n\n" +
-                "Detalles de la cita:\n" +
-                "- Paciente: %s\n" +
-                "- Fecha y hora: %s\n" +
-                "- Tipo: %s\n" +
-                "- Veterinario: %s\n\n" +
-                "Recibirá una confirmación próximamente.\n\n" +
-                "Saludos,\n" +
-                "VetClinic Pro",
+            String htmlBody = emailTemplateService.getAppointmentCreatedEmailTemplate(
                 owner.getFullName(),
                 appointment.getPatient().getName(),
-                appointment.getScheduledDate(),
+                appointment.getScheduledDate().format(DATE_FORMATTER),
                 appointment.getAppointmentType(),
                 appointment.getVeterinarian().getFullName()
             );
-            // Usar Decorator Pattern para notificaciones con auditoría
-            Notifier notifier = createNotifier();
-            notifier.send(owner.getEmail(), subject, body);
+            emailServiceAdapter.sendHtmlEmail(owner.getEmail(), subject, htmlBody);
+            log.error("✅✅✅ CORREO ENVIADO EXITOSAMENTE a: {} - Cita ID: {} ✅✅✅", owner.getEmail(), appointment.getId());
+        } else {
+            log.error("⚠ No se puede enviar correo - Owner o email es null para cita ID: {}", appointment.getId());
         }
+        log.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     }
 
     private void sendAppointmentConfirmedNotification(Appointment appointment) {
         Owner owner = appointment.getOwner();
         if (owner != null && owner.getEmail() != null) {
             String subject = "Cita Confirmada - VetClinic Pro";
-            String body = String.format(
-                "Estimado/a %s,\n\n" +
-                "Su cita ha sido confirmada.\n\n" +
-                "Detalles:\n" +
-                "- Paciente: %s\n" +
-                "- Fecha y hora: %s\n" +
-                "- Tipo: %s\n" +
-                "- Veterinario: %s\n\n" +
-                "Le esperamos en la clínica.\n\n" +
-                "Saludos,\n" +
-                "VetClinic Pro",
+            String htmlBody = emailTemplateService.getAppointmentConfirmedEmailTemplate(
                 owner.getFullName(),
                 appointment.getPatient().getName(),
-                appointment.getScheduledDate(),
+                appointment.getScheduledDate().format(DATE_FORMATTER),
                 appointment.getAppointmentType(),
                 appointment.getVeterinarian().getFullName()
             );
-            // Usar Decorator Pattern para notificaciones con auditoría
-            Notifier notifier = createNotifier();
-            notifier.send(owner.getEmail(), subject, body);
+            emailServiceAdapter.sendHtmlEmail(owner.getEmail(), subject, htmlBody);
+            log.info("Email HTML de cita confirmada enviado a: {}", owner.getEmail());
         }
     }
 
@@ -111,24 +125,14 @@ public class AppointmentNotificationObserver {
         Owner owner = appointment.getOwner();
         if (owner != null && owner.getEmail() != null) {
             String subject = "Cita Cancelada - VetClinic Pro";
-            String body = String.format(
-                "Estimado/a %s,\n\n" +
-                "Su cita ha sido cancelada.\n\n" +
-                "Detalles de la cita cancelada:\n" +
-                "- Paciente: %s\n" +
-                "- Fecha y hora: %s\n" +
-                "- Tipo: %s\n\n" +
-                "Si desea reagendar, por favor contáctenos.\n\n" +
-                "Saludos,\n" +
-                "VetClinic Pro",
+            String htmlBody = emailTemplateService.getAppointmentCancelledEmailTemplate(
                 owner.getFullName(),
                 appointment.getPatient().getName(),
-                appointment.getScheduledDate(),
+                appointment.getScheduledDate().format(DATE_FORMATTER),
                 appointment.getAppointmentType()
             );
-            // Usar Decorator Pattern para notificaciones con auditoría
-            Notifier notifier = createNotifier();
-            notifier.send(owner.getEmail(), subject, body);
+            emailServiceAdapter.sendHtmlEmail(owner.getEmail(), subject, htmlBody);
+            log.info("Email HTML de cita cancelada enviado a: {}", owner.getEmail());
         }
     }
 
@@ -136,24 +140,14 @@ public class AppointmentNotificationObserver {
         Owner owner = appointment.getOwner();
         if (owner != null && owner.getEmail() != null) {
             String subject = "Cita Completada - VetClinic Pro";
-            String body = String.format(
-                "Estimado/a %s,\n\n" +
-                "Su cita ha sido completada.\n\n" +
-                "Detalles:\n" +
-                "- Paciente: %s\n" +
-                "- Fecha: %s\n" +
-                "- Veterinario: %s\n\n" +
-                "Gracias por confiar en nosotros.\n\n" +
-                "Saludos,\n" +
-                "VetClinic Pro",
+            String htmlBody = emailTemplateService.getAppointmentCompletedEmailTemplate(
                 owner.getFullName(),
                 appointment.getPatient().getName(),
-                appointment.getScheduledDate(),
+                appointment.getScheduledDate().format(DATE_FORMATTER),
                 appointment.getVeterinarian().getFullName()
             );
-            // Usar Decorator Pattern para notificaciones con auditoría
-            Notifier notifier = createNotifier();
-            notifier.send(owner.getEmail(), subject, body);
+            emailServiceAdapter.sendHtmlEmail(owner.getEmail(), subject, htmlBody);
+            log.info("Email HTML de cita completada enviado a: {}", owner.getEmail());
         }
     }
 
@@ -161,25 +155,15 @@ public class AppointmentNotificationObserver {
         Owner owner = appointment.getOwner();
         if (owner != null && owner.getEmail() != null) {
             String subject = "Cambio de Estado de Cita - VetClinic Pro";
-            String body = String.format(
-                "Estimado/a %s,\n\n" +
-                "El estado de su cita ha cambiado.\n\n" +
-                "Estado anterior: %s\n" +
-                "Estado actual: %s\n\n" +
-                "Detalles:\n" +
-                "- Paciente: %s\n" +
-                "- Fecha: %s\n\n" +
-                "Saludos,\n" +
-                "VetClinic Pro",
+            String htmlBody = emailTemplateService.getAppointmentStatusChangedEmailTemplate(
                 owner.getFullName(),
-                previousStatus,
-                appointment.getStatus(),
                 appointment.getPatient().getName(),
-                appointment.getScheduledDate()
+                appointment.getScheduledDate().format(DATE_FORMATTER),
+                previousStatus,
+                appointment.getStatus().toString()
             );
-            // Usar Decorator Pattern para notificaciones con auditoría
-            Notifier notifier = createNotifier();
-            notifier.send(owner.getEmail(), subject, body);
+            emailServiceAdapter.sendHtmlEmail(owner.getEmail(), subject, htmlBody);
+            log.info("Email HTML de cambio de estado enviado a: {}", owner.getEmail());
         }
     }
 }

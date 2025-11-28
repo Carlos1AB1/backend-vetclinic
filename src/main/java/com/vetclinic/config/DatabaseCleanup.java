@@ -24,6 +24,28 @@ public class DatabaseCleanup implements CommandLineRunner {
         log.info("Cleaning up orphaned database records...");
         
         try {
+            // Eliminar propietarios inactivos sin usuario asociado o con usuario inactivo
+            int deletedInactiveOwners = jdbcTemplate.update(
+                "DELETE FROM owners WHERE is_active = FALSE"
+            );
+            
+            if (deletedInactiveOwners > 0) {
+                log.warn("Deleted {} inactive owners", deletedInactiveOwners);
+            }
+            
+            // Eliminar usuarios inactivos que no sean de sistema
+            jdbcTemplate.update(
+                "DELETE FROM user_roles WHERE user_id IN (SELECT id FROM users WHERE is_active = FALSE)"
+            );
+            
+            int deletedUsers = jdbcTemplate.update(
+                "DELETE FROM users WHERE is_active = FALSE AND username NOT IN ('admin', 'system')"
+            );
+            
+            if (deletedUsers > 0) {
+                log.warn("Deleted {} inactive users", deletedUsers);
+            }
+            
             // Eliminar pacientes sin propietario
             int deletedPatients = jdbcTemplate.update(
                 "DELETE FROM patients WHERE owner_id NOT IN (SELECT id FROM owners) OR owner_id IS NULL"

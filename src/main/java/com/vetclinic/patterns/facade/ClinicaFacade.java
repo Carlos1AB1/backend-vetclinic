@@ -8,7 +8,6 @@ import com.vetclinic.entity.Patient;
 import com.vetclinic.entity.User;
 import com.vetclinic.patterns.chain.appointment.AppointmentValidationChain;
 import com.vetclinic.patterns.chain.ValidationResult;
-import com.vetclinic.patterns.observer.AppointmentEvent;
 import com.vetclinic.patterns.state.AppointmentStateContext;
 import com.vetclinic.repository.AppointmentRepository;
 import com.vetclinic.repository.OwnerRepository;
@@ -17,7 +16,6 @@ import com.vetclinic.repository.UserRepository;
 import com.vetclinic.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +37,6 @@ public class ClinicaFacade {
     private final OwnerRepository ownerRepository;
     private final UserRepository userRepository;
     private final AppointmentValidationChain validationChain;
-    private final ApplicationEventPublisher eventPublisher;
     private final AppointmentStateContext stateContext;
 
     /**
@@ -50,7 +47,7 @@ public class ClinicaFacade {
      */
     @Transactional
     public AppointmentDTO agendarCita(CreateAppointmentRequest request) {
-        log.info("FACADE: Iniciando proceso de agendamiento de cita");
+        log.info("FACADE.agendarCita() - INICIANDO - Thread: {}", Thread.currentThread().getName());
 
         // 1. Validar la solicitud usando Chain of Responsibility
         ValidationResult validationResult = validationChain.validate(request);
@@ -58,21 +55,10 @@ public class ClinicaFacade {
             throw new com.vetclinic.exception.BusinessException(validationResult.getMessage());
         }
 
-        // 2. Crear la cita usando el servicio
+        // 2. Crear la cita usando el servicio (el servicio ya publica el evento CREATED UNA SOLA VEZ)
+        log.info("FACADE: Llamando a appointmentService.createAppointment()");
         AppointmentDTO appointmentDTO = appointmentService.createAppointment(request);
-
-        // 3. Obtener la entidad para publicar evento
-        Appointment appointment = appointmentRepository.findById(appointmentDTO.getId())
-            .orElseThrow(() -> new com.vetclinic.exception.ResourceNotFoundException("Cita no encontrada"));
-
-        // 4. Publicar evento usando Observer Pattern
-        AppointmentEvent event = new AppointmentEvent(
-            this,
-            appointment,
-            AppointmentEvent.AppointmentEventType.CREATED,
-            null
-        );
-        eventPublisher.publishEvent(event);
+        log.info("FACADE: appointmentService.createAppointment() completado - ID: {}", appointmentDTO.getId());
 
         log.info("FACADE: Cita agendada exitosamente con ID: {}", appointmentDTO.getId());
         return appointmentDTO;
@@ -88,32 +74,11 @@ public class ClinicaFacade {
     public AppointmentDTO confirmarCita(Long appointmentId) {
         log.info("FACADE: Confirmando cita ID: {}", appointmentId);
 
-        Appointment appointment = appointmentRepository.findById(appointmentId)
-            .orElseThrow(() -> new com.vetclinic.exception.ResourceNotFoundException("Cita no encontrada"));
-
-        String previousStatus = appointment.getStatus().name();
-
-        // Usar State Pattern para confirmar
-        stateContext.confirm(appointment);
-        appointmentRepository.save(appointment);
-
-        // Actualizar estado usando el servicio
+        // Actualizar estado usando el servicio (el servicio ya publica el evento CONFIRMED)
         com.vetclinic.dto.appointment.UpdateAppointmentRequest updateRequest = 
             new com.vetclinic.dto.appointment.UpdateAppointmentRequest();
         updateRequest.setStatus("CONFIRMED");
         AppointmentDTO appointmentDTO = appointmentService.updateAppointment(appointmentId, updateRequest);
-
-        // Publicar evento
-        Appointment updatedAppointment = appointmentRepository.findById(appointmentId)
-            .orElseThrow(() -> new com.vetclinic.exception.ResourceNotFoundException("Cita no encontrada"));
-        
-        AppointmentEvent event = new AppointmentEvent(
-            this,
-            updatedAppointment,
-            AppointmentEvent.AppointmentEventType.CONFIRMED,
-            previousStatus
-        );
-        eventPublisher.publishEvent(event);
 
         log.info("FACADE: Cita confirmada exitosamente");
         return appointmentDTO;
@@ -128,25 +93,8 @@ public class ClinicaFacade {
     public void cancelarCita(Long appointmentId) {
         log.info("FACADE: Cancelando cita ID: {}", appointmentId);
 
-        Appointment appointment = appointmentRepository.findById(appointmentId)
-            .orElseThrow(() -> new com.vetclinic.exception.ResourceNotFoundException("Cita no encontrada"));
-
-        String previousStatus = appointment.getStatus().name();
-
-        // Cancelar usando el servicio
+        // Cancelar usando el servicio (el servicio ya publica el evento CANCELLED)
         appointmentService.cancelAppointment(appointmentId);
-
-        // Publicar evento
-        Appointment cancelledAppointment = appointmentRepository.findById(appointmentId)
-            .orElseThrow(() -> new com.vetclinic.exception.ResourceNotFoundException("Cita no encontrada"));
-        
-        AppointmentEvent event = new AppointmentEvent(
-            this,
-            cancelledAppointment,
-            AppointmentEvent.AppointmentEventType.CANCELLED,
-            previousStatus
-        );
-        eventPublisher.publishEvent(event);
 
         log.info("FACADE: Cita cancelada exitosamente");
     }
@@ -161,28 +109,11 @@ public class ClinicaFacade {
     public AppointmentDTO completarCita(Long appointmentId) {
         log.info("FACADE: Completando cita ID: {}", appointmentId);
 
-        Appointment appointment = appointmentRepository.findById(appointmentId)
-            .orElseThrow(() -> new com.vetclinic.exception.ResourceNotFoundException("Cita no encontrada"));
-
-        String previousStatus = appointment.getStatus().name();
-
-        // Actualizar estado
+        // Actualizar estado usando el servicio (el servicio ya publica el evento COMPLETED)
         com.vetclinic.dto.appointment.UpdateAppointmentRequest updateRequest = 
             new com.vetclinic.dto.appointment.UpdateAppointmentRequest();
         updateRequest.setStatus("COMPLETED");
         AppointmentDTO appointmentDTO = appointmentService.updateAppointment(appointmentId, updateRequest);
-
-        // Publicar evento
-        Appointment completedAppointment = appointmentRepository.findById(appointmentId)
-            .orElseThrow(() -> new com.vetclinic.exception.ResourceNotFoundException("Cita no encontrada"));
-        
-        AppointmentEvent event = new AppointmentEvent(
-            this,
-            completedAppointment,
-            AppointmentEvent.AppointmentEventType.COMPLETED,
-            previousStatus
-        );
-        eventPublisher.publishEvent(event);
 
         log.info("FACADE: Cita completada exitosamente");
         return appointmentDTO;

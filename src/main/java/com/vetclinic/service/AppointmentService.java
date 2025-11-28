@@ -57,9 +57,10 @@ public class AppointmentService {
      * Crear una nueva cita
      */
     public AppointmentDTO createAppointment(CreateAppointmentRequest request) {
-        log.info("Creando nueva cita para paciente ID: {}", request.getPatientId());
+        log.info("AppointmentService.createAppointment() - Iniciando - Paciente ID: {}", request.getPatientId());
 
-        // Validar usando Chain of Responsibility
+        // NOTA: La validación ya se hace en el Facade, pero la mantenemos aquí por seguridad
+        // Si se llama directamente al servicio sin pasar por el Facade
         ValidationResult validationResult = validationChain.validate(request);
         if (!validationResult.isValid()) {
             throw new BusinessException(validationResult.getMessage());
@@ -96,7 +97,12 @@ public class AppointmentService {
         Appointment savedAppointment = appointmentRepository.save(appointment);
         log.info("Cita creada exitosamente con ID: {}, Fecha guardada: {}", savedAppointment.getId(), savedAppointment.getScheduledDate());
 
-        // Publicar evento usando Observer Pattern
+        // Publicar evento usando Observer Pattern (SOLO UNA VEZ)
+        log.error("═══════════════════════════════════════════════════════════════");
+        log.error("📤 PUBLICANDO EVENTO CREATED");
+        log.error("   Cita ID: {}", savedAppointment.getId());
+        log.error("   Thread: {}", Thread.currentThread().getName());
+        log.error("   Source: AppointmentService");
         AppointmentEvent event = new AppointmentEvent(
             this,
             savedAppointment,
@@ -104,6 +110,8 @@ public class AppointmentService {
             null
         );
         eventPublisher.publishEvent(event);
+        log.error("✅ EVENTO CREATED PUBLICADO - Cita ID: {}", savedAppointment.getId());
+        log.error("═══════════════════════════════════════════════════════════════");
 
         return mapToDTO(savedAppointment);
     }

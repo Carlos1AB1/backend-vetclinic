@@ -42,6 +42,19 @@ public class SpringMailAdapter implements EmailServiceAdapter {
     @Override
     public void sendHtmlEmail(String to, String subject, String htmlBody) {
         try {
+            // Log detallado para rastrear duplicados
+            log.error("═══════════════════════════════════════════════════════════════");
+            log.error("🚨🚨🚨 ENVIANDO EMAIL HTML 🚨🚨🚨");
+            log.error("   Para: {}", to);
+            log.error("   Asunto: {}", subject);
+            log.error("   Thread: {}", Thread.currentThread().getName());
+            log.error("   Stack trace:");
+            StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+            for (int i = 0; i < Math.min(10, stack.length); i++) {
+                log.error("      {} - {}", i, stack[i].toString());
+            }
+            log.error("═══════════════════════════════════════════════════════════════");
+            
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             
@@ -50,9 +63,9 @@ public class SpringMailAdapter implements EmailServiceAdapter {
             helper.setText(htmlBody, true);
             
             mailSender.send(mimeMessage);
-            log.info("HTML email sent successfully to: {}", to);
+            log.error("✅✅✅ EMAIL HTML ENVIADO EXITOSAMENTE a: {} ✅✅✅", to);
         } catch (MessagingException e) {
-            log.error("Error sending HTML email to: {}", to, e);
+            log.error("❌❌❌ ERROR ENVIANDO EMAIL HTML a: {} ❌❌❌", to, e);
             throw new RuntimeException("Failed to send HTML email", e);
         }
     }

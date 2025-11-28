@@ -25,6 +25,18 @@ public class EmailNotificationStrategy implements NotificationStrategy {
         }
     }
 
+    /**
+     * Send HTML email
+     */
+    public void sendHtml(String recipient, String subject, String htmlMessage) {
+        try {
+            emailServiceAdapter.sendHtmlEmail(recipient, subject, htmlMessage);
+            log.info("HTML email notification sent to: {}", recipient);
+        } catch (Exception e) {
+            log.error("Failed to send HTML email notification to: {}", recipient, e);
+        }
+    }
+
     @Override
     public String getChannelType() {
         return "EMAIL";

@@ -12,7 +12,6 @@ import com.vetclinic.patterns.adapter.EmailServiceAdapter;
 import com.vetclinic.patterns.chain.RegistrationValidationChain;
 import com.vetclinic.patterns.chain.ValidationResult;
 import com.vetclinic.patterns.factory.NotificationFactory;
-import com.vetclinic.patterns.strategy.NotificationStrategy;
 import com.vetclinic.repository.PasswordResetTokenRepository;
 import com.vetclinic.repository.RoleRepository;
 import com.vetclinic.repository.UserRepository;
@@ -54,6 +53,7 @@ public class AuthService {
     private final EmailServiceAdapter emailServiceAdapter;
     private final RegistrationValidationChain validationChain;
     private final NotificationFactory notificationFactory;
+    private final EmailTemplateService emailTemplateService;
 
     @Value("${app.frontend-url}")
     private String frontendUrl;
@@ -341,59 +341,53 @@ public class AuthService {
     }
 
     private void sendWelcomeEmail(User user) {
-        String subject = "Welcome to VetClinic Pro!";
-        String body = String.format(
-                "Hello %s,\n\n" +
-                "Welcome to VetClinic Pro! Your account has been successfully created.\n\n" +
-                "Username: %s\n" +
-                "Email: %s\n\n" +
-                "You can now login to the system at: %s\n\n" +
-                "Best regards,\n" +
-                "VetClinic Pro Team",
+        String subject = "¡Bienvenido a VetClinic Pro!";
+        String loginUrl = frontendUrl + "/login";
+        String htmlBody = emailTemplateService.getWelcomeEmailTemplate(
                 user.getFullName(),
                 user.getUsername(),
                 user.getEmail(),
-                frontendUrl
+                loginUrl
         );
 
-        // Usar Factory Method Pattern para crear estrategia de notificación
-        NotificationStrategy notificationStrategy = notificationFactory.create("EMAIL");
-        notificationStrategy.send(user.getEmail(), subject, body);
+        // Enviar email HTML
+        try {
+            emailServiceAdapter.sendHtmlEmail(user.getEmail(), subject, htmlBody);
+            log.info("Welcome email sent to: {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send welcome email to: {}", user.getEmail(), e);
+        }
     }
 
     private void sendPasswordResetEmail(User user, String token) {
         String resetLink = frontendUrl + "/reset-password?token=" + token;
-        String subject = "Password Reset Request";
-        String body = String.format(
-                "Hello %s,\n\n" +
-                "You have requested to reset your password. Click the link below to reset it:\n\n" +
-                "%s\n\n" +
-                "This link will expire in 1 hour.\n\n" +
-                "If you did not request this, please ignore this email.\n\n" +
-                "Best regards,\n" +
-                "VetClinic Pro Team",
+        String subject = "Restablecer Contraseña - VetClinic Pro";
+        String htmlBody = emailTemplateService.getPasswordResetEmailTemplate(
                 user.getFullName(),
                 resetLink
         );
 
-        // Usar Factory Method Pattern para crear estrategia de notificación
-        NotificationStrategy notificationStrategy = notificationFactory.create("EMAIL");
-        notificationStrategy.send(user.getEmail(), subject, body);
+        // Enviar email HTML
+        try {
+            emailServiceAdapter.sendHtmlEmail(user.getEmail(), subject, htmlBody);
+            log.info("Password reset email sent to: {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send password reset email to: {}", user.getEmail(), e);
+        }
     }
 
     private void sendPasswordChangedEmail(User user) {
-        String subject = "Password Changed Successfully";
-        String body = String.format(
-                "Hello %s,\n\n" +
-                "Your password has been changed successfully.\n\n" +
-                "If you did not make this change, please contact support immediately.\n\n" +
-                "Best regards,\n" +
-                "VetClinic Pro Team",
+        String subject = "Contraseña Actualizada - VetClinic Pro";
+        String htmlBody = emailTemplateService.getPasswordChangedEmailTemplate(
                 user.getFullName()
         );
 
-        // Usar Factory Method Pattern para crear estrategia de notificación
-        NotificationStrategy notificationStrategy = notificationFactory.create("EMAIL");
-        notificationStrategy.send(user.getEmail(), subject, body);
+        // Enviar email HTML
+        try {
+            emailServiceAdapter.sendHtmlEmail(user.getEmail(), subject, htmlBody);
+            log.info("Password changed email sent to: {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send password changed email to: {}", user.getEmail(), e);
+        }
     }
 }

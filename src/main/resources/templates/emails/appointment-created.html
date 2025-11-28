@@ -1,0 +1,45 @@
+<div style="text-align: center; margin-bottom: 32px;">
+    <h2 style="color: #1F2937; margin: 0 0 8px 0; font-size: 24px; font-weight: 700;">Cita Creada Exitosamente</h2>
+    <p style="color: #6B7280; margin: 0; font-size: 16px;">Tu cita ha sido registrada en nuestro sistema.</p>
+</div>
+
+<p style="color: #1F2937; font-size: 16px; line-height: 24px; margin: 0 0 24px 0;">
+    Hola <strong>{{ownerName}}</strong>, tu cita ha sido creada exitosamente. Recibirás una confirmación próximamente.
+</p>
+
+<div style="background-color: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+    <h3 style="color: #1F2937; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 16px 0;">
+        DETALLES DE LA CITA
+    </h3>
+    <div style="margin-bottom: 16px;">
+        <span style="color: #6B7280; font-size: 12px; text-transform: uppercase; font-weight: 700;">Paciente</span><br>
+        <span style="color: #1F2937; font-size: 16px; font-weight: 600;">{{patientName}}</span>
+    </div>
+    <div style="margin-bottom: 16px;">
+        <span style="color: #6B7280; font-size: 12px; text-transform: uppercase; font-weight: 700;">Fecha y Hora</span><br>
+        <span style="color: #1F2937; font-size: 16px;">{{scheduledDate}}</span>
+    </div>
+    <div style="margin-bottom: 16px;">
+        <span style="color: #6B7280; font-size: 12px; text-transform: uppercase; font-weight: 700;">Tipo de Cita</span><br>
+        <span style="color: #1F2937; font-size: 16px;">{{appointmentType}}</span>
+    </div>
+    <div>
+        <span style="color: #6B7280; font-size: 12px; text-transform: uppercase; font-weight: 700;">Veterinario</span><br>
+        <span style="color: #1F2937; font-size: 16px;">{{veterinarianName}}</span>
+    </div>
+</div>
+
+<div style="background-color: #ECFDF5; border-left: 4px solid #10B981; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
+    <p style="color: #065F46; margin: 0; font-size: 14px; line-height: 1.5;">
+        <strong>✓</strong> Tu cita está pendiente de confirmación. Te notificaremos cuando sea confirmada.
+    </p>
+</div>
+
+<div style="text-align: center; margin: 32px 0;">
+    <a href="{{frontendUrl}}/appointments" style="background-color: #4F46E5; color: #ffffff; display: inline-block; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);">
+        <!--[if mso]><i style="letter-spacing: 25px; mso-font-width: -100%; mso-text-raise: 30pt;">&nbsp;</i><![endif]-->
+        <span style="mso-text-raise: 15pt;">Ver Mis Citas &rarr;</span>
+        <!--[if mso]><i style="letter-spacing: 25px; mso-font-width: -100%;">&nbsp;</i><![endif]-->
+    </a>
+</div>
+

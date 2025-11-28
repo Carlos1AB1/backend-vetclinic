@@ -37,8 +37,11 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME:your-email@gmail.com}
-    password: ${MAIL_PASSWORD:your-password}
+    # ⚠️ Las credenciales se obtienen del archivo .env (cargado automáticamente)
+    # O de variables de entorno del sistema
+    # NO poner credenciales aquí - usar archivo .env
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -53,7 +56,10 @@ spring:
 
 # JWT Configuration
 jwt:
-  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B59703373367639792442264529482B4D6251655468576D5A7134743777217A25432A}
+  # ⚠️ El secret se obtiene del archivo .env (cargado automáticamente)
+  # O de variable de entorno del sistema
+  # NO poner el secret aquí - usar archivo .env
+  secret: ${JWT_SECRET}
   expiration: 86400000 # 24 hours
   refresh-expiration: 604800000 # 7 days
 
@@ -103,6 +109,7 @@ logging:
 app:
   name: VetClinic Pro
   version: 1.0.0
+  clinic-name: ${CLINIC_NAME:VetClinic Pro}
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
   backend-url: ${BACKEND_URL:http://localhost:8081}
   password-reset-token-expiration: 3600000 # 1 hour

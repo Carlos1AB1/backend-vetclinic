@@ -147,13 +147,22 @@
             <artifactId>caffeine</artifactId>
         </dependency>
         
-        <!-- DevTools -->
+        <!-- DotEnv - Cargar variables de entorno desde .env -->
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        
+        <!-- DevTools - Comentado temporalmente por problemas de classloader -->
+        <!--
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
+        -->
         
         <!-- Testing -->
         <dependency>

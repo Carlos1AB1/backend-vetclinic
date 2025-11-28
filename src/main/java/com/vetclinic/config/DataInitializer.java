@@ -45,6 +45,9 @@ public class DataInitializer implements CommandLineRunner {
         // Create default admin user
         createDefaultAdmin();
 
+        // Update passwords for other users if needed
+        updateUserPasswords();
+
         log.info("Default data initialization completed!");
     }
 
@@ -231,5 +234,41 @@ public class DataInitializer implements CommandLineRunner {
         userRepository.save(admin);
         log.info("Default admin user created - Username: admin, Password: admin123");
         log.warn("IMPORTANT: Please change the admin password after first login!");
+    }
+
+    /**
+     * Update passwords for users created by SQL script to ensure they work correctly
+     * This method updates passwords for users that might have incorrect BCrypt hashes
+     */
+    private void updateUserPasswords() {
+        log.info("Updating user passwords if needed...");
+        
+        // List of users that should have password "password123"
+        String[] usersToUpdate = {
+            "dr.garcia", "dr.rodriguez",
+            "ana.martinez", "luis.lopez",
+            "juan.perez", "maria.gonzalez", "carlos.ramirez"
+        };
+        
+        String defaultPassword = "password123";
+        int updatedCount = 0;
+        
+        for (String username : usersToUpdate) {
+            Optional<User> userOpt = userRepository.findByUsername(username);
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                // Update password with correct BCrypt hash
+                user.setPassword(passwordEncoder.encode(defaultPassword));
+                userRepository.save(user);
+                updatedCount++;
+                log.debug("Updated password for user: {}", username);
+            }
+        }
+        
+        if (updatedCount > 0) {
+            log.info("Updated passwords for {} users (all set to: {})", updatedCount, defaultPassword);
+        } else {
+            log.info("No users needed password updates");
+        }
     }
 }

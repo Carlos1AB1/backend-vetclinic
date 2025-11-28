@@ -1,7 +1,13 @@
 package com.vetclinic.controller;
 
 import com.vetclinic.dto.ApiResponse;
-import com.vetclinic.dto.auth.*;
+import com.vetclinic.dto.auth.ChangePasswordRequest;
+import com.vetclinic.dto.auth.ForgotPasswordRequest;
+import com.vetclinic.dto.auth.LoginRequest;
+import com.vetclinic.dto.auth.LoginResponse;
+import com.vetclinic.dto.auth.RefreshTokenRequest;
+import com.vetclinic.dto.auth.RegisterRequest;
+import com.vetclinic.dto.auth.ResetPasswordRequest;
 import com.vetclinic.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
