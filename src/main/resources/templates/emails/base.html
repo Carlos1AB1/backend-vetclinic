@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="x-apple-disable-message-reformatting">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>{{title}}</title>
     <!--[if mso]>
     <noscript>
@@ -15,53 +16,119 @@
     </noscript>
     <![endif]-->
     <style>
+        /* Importación de fuente premium */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body, td, th { font-family: 'Inter', Helvetica, Arial, sans-serif; }
+        
+        /* Reset básico */
+        body, td, th {
+            font-family: 'Inter', Helvetica, Arial, sans-serif;
+            color: #334155;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            background-color: #F8FAFC;
+        }
+
+        /* Estilos Responsivos para Móviles */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+                margin: 0 !important;
+            }
+            .content-padding {
+                padding: 30px 20px !important;
+            }
+            .mobile-hide {
+                display: none !important;
+            }
+            .header-logo {
+                width: 70px !important;
+                height: auto !important;
+            }
+        }
+
+        /* Estilos de Botones y Enlaces */
+        a {
+            color: #4F46E5;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #F3F4F6; width: 100%;">
-    <!-- Preheader oculto -->
-    <div style="display: none; max-height: 0px; overflow: hidden;">{{preheader}}</div>
+<body style="margin: 0; padding: 0; background-color: #F8FAFC;">
     
-    <center style="width: 100%; table-layout: fixed; background-color: #F3F4F6; padding-bottom: 60px;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F3F4F6; margin: 0 auto; max-width: 600px;">
+    <!-- PREHEADER: Texto invisible de previsualización -->
+    <div style="display: none; max-height: 0px; overflow: hidden; mso-hide: all;">
+        {{preheader}}
+        &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+    </div>
+
+    <center style="width: 100%; table-layout: fixed; background-color: #F8FAFC; padding-bottom: 40px;">
+        
+        <!-- CONTENEDOR PRINCIPAL -->
+        <table class="email-container" border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.08); margin-top: 40px; margin-bottom: 40px; border: 1px solid #E2E8F0;">
             
-            <!-- Header con Logo -->
+            <!-- 1. BARRA SUPERIOR DE MARCA (Accent Bar) -->
             <tr>
-                <td align="center" style="padding: 40px 0 30px 0;">
-                    <table cellpadding="0" cellspacing="0">
-                        <tr>
-                            <td style="background-color: #4F46E5; padding: 12px; border-radius: 12px; margin-right: 15px;">
-                                <span style="font-size: 28px;">🐾</span>
-                            </td>
-                            <td style="padding-left: 15px;">
-                                <h1 style="margin: 0; color: #1F2937; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">{{clinicName}}</h1>
-                                <p style="margin: 0; color: #4F46E5; font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">Veterinary Care</p>
-                            </td>
-                        </tr>
-                    </table>
+                <td height="6" style="background: linear-gradient(90deg, #4F46E5 0%, #7C3AED 100%); font-size: 0; line-height: 0;">&nbsp;</td>
+            </tr>
+
+            <!-- 2. HEADER CON LOGO -->
+            <tr>
+                <td align="center" style="padding: 40px 0 30px 0; border-bottom: 1px solid #F1F5F9;">
+                    <a href="{{frontendUrl}}" target="_blank" style="text-decoration: none;">
+                        <!-- Logo corregido enlace directo -->
+                        <img class="header-logo" src="https://i.imgur.com/MWLj5jZ.png" alt="VetClinic Logo" width="80" height="auto" style="display: block; border: 0; outline: none;" />
+                    </a>
                 </td>
             </tr>
 
-            <!-- Contenedor Principal (Tarjeta Blanca) -->
+            <!-- 3. CONTENIDO DINÁMICO -->
+            <!-- Aquí es donde inyectas el HTML específico de cada correo -->
             <tr>
-                <td style="background-color: #ffffff; padding: 48px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+                <td class="content-padding" style="padding: 48px 56px; background-color: #ffffff; font-size: 16px; line-height: 1.6; color: #334155;">
+                    
+                    <!-- MARCADOR DE POSICIÓN PARA TU CONTENIDO -->
                     {{content}}
+
                 </td>
             </tr>
 
-            <!-- Footer -->
+            <!-- 4. FOOTER PROFESIONAL -->
             <tr>
-                <td align="center" style="padding-top: 30px;">
-                    <p style="margin: 0 0 10px 0; color: #6B7280; font-size: 12px;">© {{currentYear}} {{clinicName}}. Todos los derechos reservados.</p>
-                    <p style="margin: 0; color: #6B7280; font-size: 12px;">
-                        <a href="{{frontendUrl}}" style="color: #6B7280; text-decoration: none;">Privacidad</a> &bull; 
-                        <a href="{{frontendUrl}}" style="color: #6B7280; text-decoration: none;">Soporte</a>
+                <td style="background-color: #F8FAFC; padding: 32px 40px; border-top: 1px solid #E2E8F0; text-align: center;">
+                    
+                    <!-- Nombre de la Clínica -->
+                    <p style="margin: 0 0 12px 0; font-size: 13px; color: #1E293B; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+                        {{clinicName}}
+                    </p>
+                    
+                    <!-- Copyright y Dirección -->
+                    <p style="margin: 0 0 16px 0; font-size: 12px; color: #64748B; line-height: 1.5;">
+                        &copy; {{currentYear}} Todos los derechos reservados.<br>
+                        Cuidando vidas, un paciente a la vez.
+                    </p>
+                    
+                    <!-- Enlaces Legales -->
+                    <p style="margin: 0; font-size: 11px; color: #94A3B8;">
+                        <a href="{{frontendUrl}}" style="color: #64748B; text-decoration: none; font-weight: 500;">Visitar Sitio Web</a> &nbsp;&bull;&nbsp; 
+                        <a href="{{frontendUrl}}/privacy" style="color: #64748B; text-decoration: none; font-weight: 500;">Política de Privacidad</a>
                     </p>
                 </td>
             </tr>
         </table>
+
+        <!-- Espaciado final invisible -->
+        <div style="height: 40px; font-size: 0; line-height: 0;">&nbsp;</div>
+
     </center>
 </body>
 </html>
-
