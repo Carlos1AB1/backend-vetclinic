@@ -1,61 +1,75 @@
-<div style="text-align: center; margin-bottom: 32px;">
-    <h2 style="color: #1F2937; margin: 0 0 8px 0; font-size: 24px; font-weight: 700;">Recordatorio de Cita</h2>
-    <p style="color: #6B7280; margin: 0; font-size: 16px;">Tu cita está próxima.</p>
+<div style="text-align: center; margin-bottom: 40px;">
+    <div style="display: inline-block; background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%); border-radius: 50%; width: 80px; height: 80px; line-height: 80px; margin-bottom: 20px;">
+        <span style="font-size: 40px;">⏰</span>
+    </div>
+    <h2 style="color: #1e293b; margin: 0 0 10px 0; font-size: 26px; font-weight: 700; letter-spacing: -0.5px;">Recordatorio de Cita</h2>
+    <p style="color: #64748b; margin: 0; font-size: 15px; font-weight: 400;">Tu cita está próxima</p>
 </div>
 
-<p style="color: #1F2937; font-size: 16px; line-height: 24px; margin: 0 0 24px 0;">
-    Hola <strong>{{ownerName}}</strong>, este es un recordatorio de tu cita programada.
+<p style="color: #1e293b; font-size: 16px; line-height: 1.7; margin: 0 0 30px 0;">
+    Hola <strong style="color: #4F46E5;">{{ownerName}}</strong>,<br>
+    Este es un recordatorio de tu cita programada. Te esperamos en la clínica.
 </p>
 
-<div style="background-color: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
-    <h3 style="color: #1F2937; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 16px 0;">
-        DETALLES DE LA CITA
+<div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 2px solid #e2e8f0; border-radius: 16px; padding: 28px; margin-bottom: 28px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+    <h3 style="color: #1e293b; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 22px 0; padding-bottom: 12px; border-bottom: 2px solid #f59e0b;">
+        📋 DETALLES DE LA CITA
     </h3>
-    <div style="margin-bottom: 16px;">
-        <span style="color: #6B7280; font-size: 12px; text-transform: uppercase; font-weight: 700;">Paciente</span><br>
-        <span style="color: #1F2937; font-size: 16px; font-weight: 600;">{{patientName}}</span>
-    </div>
-    <div style="margin-bottom: 16px;">
-        <span style="color: #6B7280; font-size: 12px; text-transform: uppercase; font-weight: 700;">Fecha y Hora</span><br>
-        <span style="color: #1F2937; font-size: 16px;">{{scheduledDate}}</span>
-    </div>
-    <div style="margin-bottom: 16px;">
-        <span style="color: #6B7280; font-size: 12px; text-transform: uppercase; font-weight: 700;">Tipo de Cita</span><br>
-        <span style="color: #1F2937; font-size: 16px;">{{appointmentType}}</span>
-    </div>
-    <div>
-        <span style="color: #6B7280; font-size: 12px; text-transform: uppercase; font-weight: 700;">Veterinario</span><br>
-        <span style="color: #1F2937; font-size: 16px;">{{veterinarianName}}</span>
-    </div>
+    
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+        <tr>
+            <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                <span style="color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Paciente</span><br>
+                <span style="color: #1e293b; font-size: 17px; font-weight: 600; margin-top: 4px; display: inline-block;">{{patientName}}</span>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                <span style="color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Fecha y Hora</span><br>
+                <span style="color: #1e293b; font-size: 17px; font-weight: 500; margin-top: 4px; display: inline-block;">{{scheduledDate}}</span>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                <span style="color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Tipo de Cita</span><br>
+                <span style="color: #1e293b; font-size: 17px; font-weight: 500; margin-top: 4px; display: inline-block;">{{appointmentType}}</span>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 12px 0;">
+                <span style="color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Veterinario</span><br>
+                <span style="color: #1e293b; font-size: 17px; font-weight: 500; margin-top: 4px; display: inline-block;">{{veterinarianName}}</span>
+            </td>
+        </tr>
+    </table>
 </div>
 
-<div style="background-color: #FFFBEB; border-left: 4px solid #F59E0B; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
-    <p style="color: #92400E; margin: 0; font-size: 14px; line-height: 1.5;">
-        <strong>Importante:</strong> Faltan <strong>{{hoursBefore}} horas</strong> para tu cita. Por favor, confirma tu asistencia.
+<div style="background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%); border-left: 4px solid #f59e0b; padding: 18px 20px; margin-bottom: 28px; border-radius: 8px;">
+    <p style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.6; font-weight: 600;">
+        <strong style="font-size: 16px;">⏰ Importante:</strong> Faltan <strong>{{hoursBefore}} horas</strong> para tu cita. Por favor, confirma tu asistencia.
     </p>
 </div>
 
-<div style="margin: 32px 0;">
-    <div style="text-align: center; margin-bottom: 16px;">
-        <a href="{{confirmUrl}}" style="background-color: #10B981; color: #ffffff; display: inline-block; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; margin: 4px; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);">
-            ✓ Confirmar
+<div style="margin: 36px 0;">
+    <div style="text-align: center; margin-bottom: 12px;">
+        <a href="{{confirmUrl}}" style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%); color: #ffffff; display: inline-block; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px; margin: 4px; box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);">
+            ✓ Confirmar Cita
         </a>
     </div>
-    <div style="text-align: center; margin-bottom: 16px;">
-        <a href="{{cancelUrl}}" style="background-color: #EF4444; color: #ffffff; display: inline-block; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; margin: 4px; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);">
-            ✗ Cancelar
+    <div style="text-align: center; margin-bottom: 12px;">
+        <a href="{{cancelUrl}}" style="background: linear-gradient(135deg, #ef4444 0%, #f87171 100%); color: #ffffff; display: inline-block; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px; margin: 4px; box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);">
+            ✗ Cancelar Cita
         </a>
     </div>
     <div style="text-align: center;">
-        <a href="{{rescheduleUrl}}" style="background-color: #F3F4F6; color: #1F2937; display: inline-block; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; margin: 4px; border: 2px solid #4F46E5;">
-            ↻ Reprogramar
+        <a href="{{rescheduleUrl}}" style="background: #ffffff; color: #4F46E5; display: inline-block; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px; margin: 4px; border: 2px solid #4F46E5; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.1);">
+            ↻ Reprogramar Cita
         </a>
     </div>
 </div>
 
-<hr style="border: none; border-top: 1px solid #E5E7EB; margin: 32px 0;">
-
-<p style="color: #6B7280; font-size: 13px; line-height: 1.5; margin: 0; text-align: center;">
-    Estos enlaces son válidos por 48 horas y solo pueden usarse una vez.
-</p>
-
+<div style="border-top: 1px solid #e2e8f0; margin: 32px 0; padding-top: 24px;">
+    <p style="color: #64748b; font-size: 12px; line-height: 1.6; margin: 0; text-align: center;">
+        Estos enlaces son válidos por 48 horas y solo pueden usarse una vez.
+    </p>
+</div>

@@ -81,13 +81,49 @@
                 <td height="6" style="background: linear-gradient(90deg, #4F46E5 0%, #7C3AED 100%); font-size: 0; line-height: 0;">&nbsp;</td>
             </tr>
 
-            <!-- 2. HEADER CON LOGO -->
+            <!-- 2. HEADER CON LOGO Y GRADIENTE PROFESIONAL -->
             <tr>
-                <td align="center" style="padding: 40px 0 30px 0; border-bottom: 1px solid #F1F5F9;">
-                    <a href="{{frontendUrl}}" target="_blank" style="text-decoration: none;">
-                        <!-- Logo corregido enlace directo -->
-                        <img class="header-logo" src="https://i.imgur.com/MWLj5jZ.png" alt="VetClinic Logo" width="80" height="auto" style="display: block; border: 0; outline: none;" />
-                    </a>
+                <td style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); padding: 40px 30px; position: relative; overflow: hidden;">
+                    <!-- Elementos decorativos de fondo -->
+                    <div style="position: absolute; top: -30px; right: -30px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                    <div style="position: absolute; bottom: -20px; left: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.05); border-radius: 50%;"></div>
+                    
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="position: relative; z-index: 1;">
+                        <tr>
+                            <td align="center" style="padding: 0;">
+                                <table border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                                    <tr>
+                                        <td align="center" style="padding: 0;">
+                                            <a href="{{frontendUrl}}" target="_blank" style="text-decoration: none; display: block;">
+                                                <table border="0" cellpadding="0" cellspacing="0" style="background: white; padding: 12px; border-radius: 16px; margin: 0 auto;">
+                                                    <tr>
+                                                        <td align="center" style="padding: 0;">
+                                                            <img src="cid:logo" 
+                                                                 alt="VetClinic Pro" 
+                                                                 width="66" 
+                                                                 height="66" 
+                                                                 border="0" 
+                                                                 style="display: block; border: 0; width: 66px; height: 66px; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic;" />
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center" style="padding-top: 20px;">
+                                <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                                    VetClinic Pro
+                                </h1>
+                                <p style="margin: 8px 0 0 0; color: rgba(255,255,255,0.95); font-size: 14px; font-weight: 300;">
+                                    Sistema de Gestión Veterinaria Profesional
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
                 </td>
             </tr>
 
@@ -104,24 +140,27 @@
 
             <!-- 4. FOOTER PROFESIONAL -->
             <tr>
-                <td style="background-color: #F8FAFC; padding: 32px 40px; border-top: 1px solid #E2E8F0; text-align: center;">
-                    
+                <td style="background-color: #1e293b; color: #ffffff; padding: 35px 40px; text-align: center;">
                     <!-- Nombre de la Clínica -->
-                    <p style="margin: 0 0 12px 0; font-size: 13px; color: #1E293B; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+                    <p style="margin: 0 0 15px 0; font-size: 14px; color: #ffffff; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;">
                         {{clinicName}}
                     </p>
                     
-                    <!-- Copyright y Dirección -->
-                    <p style="margin: 0 0 16px 0; font-size: 12px; color: #64748B; line-height: 1.5;">
+                    <!-- Copyright -->
+                    <p style="margin: 0 0 20px 0; font-size: 12px; color: rgba(255,255,255,0.8); line-height: 1.6;">
                         &copy; {{currentYear}} Todos los derechos reservados.<br>
-                        Cuidando vidas, un paciente a la vez.
+                        <span style="color: rgba(255,255,255,0.7);">Cuidando vidas, un paciente a la vez.</span>
                     </p>
                     
-                    <!-- Enlaces Legales -->
-                    <p style="margin: 0; font-size: 11px; color: #94A3B8;">
-                        <a href="{{frontendUrl}}" style="color: #64748B; text-decoration: none; font-weight: 500;">Visitar Sitio Web</a> &nbsp;&bull;&nbsp; 
-                        <a href="{{frontendUrl}}/privacy" style="color: #64748B; text-decoration: none; font-weight: 500;">Política de Privacidad</a>
-                    </p>
+                    <!-- Línea divisoria -->
+                    <div style="border-top: 1px solid rgba(255,255,255,0.2); margin: 20px 0; padding-top: 20px;">
+                        <!-- Enlaces Legales -->
+                        <p style="margin: 0; font-size: 11px; color: rgba(255,255,255,0.7);">
+                            <a href="{{frontendUrl}}" style="color: rgba(255,255,255,0.9); text-decoration: none; font-weight: 500; margin: 0 8px;">Visitar Sitio Web</a> 
+                            <span style="color: rgba(255,255,255,0.5);">•</span> 
+                            <a href="{{frontendUrl}}/privacy" style="color: rgba(255,255,255,0.9); text-decoration: none; font-weight: 500; margin: 0 8px;">Política de Privacidad</a>
+                        </p>
+                    </div>
                 </td>
             </tr>
         </table>

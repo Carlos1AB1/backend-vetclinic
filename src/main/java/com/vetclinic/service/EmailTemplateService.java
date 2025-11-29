@@ -66,7 +66,12 @@ public class EmailTemplateService {
         while (matcher.find()) {
             String variableName = matcher.group(1).trim();
             String value = variables.getOrDefault(variableName, "");
-            matcher.appendReplacement(result, Matcher.quoteReplacement(value));
+            // No escapar HTML si es contenido HTML (como el logo)
+            if (variableName.equals("logoBase64") || variableName.equals("content")) {
+                matcher.appendReplacement(result, value);
+            } else {
+                matcher.appendReplacement(result, Matcher.quoteReplacement(value));
+            }
         }
         matcher.appendTail(result);
 
