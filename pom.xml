@@ -154,6 +154,13 @@
             <version>3.0.0</version>
         </dependency>
         
+        <!-- Twilio SMS -->
+        <dependency>
+            <groupId>com.twilio.sdk</groupId>
+            <artifactId>twilio</artifactId>
+            <version>9.14.0</version>
+        </dependency>
+        
         <!-- DevTools - Comentado temporalmente por problemas de classloader -->
         <!--
         <dependency>

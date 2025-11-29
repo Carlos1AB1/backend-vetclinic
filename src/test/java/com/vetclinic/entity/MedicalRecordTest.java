@@ -254,6 +254,7 @@ class MedicalRecordTest {
                 "Signos vitales",
                 new BigDecimal("25.0"),
                 new BigDecimal("38.0"),
+                new BigDecimal("80.0"), // heartRate
                 "Notas",
                 true,
                 now.plusDays(7),

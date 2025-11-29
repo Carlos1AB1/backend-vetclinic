@@ -9,6 +9,7 @@ import com.vetclinic.exception.ResourceNotFoundException;
 import com.vetclinic.exception.TokenExpiredException;
 import com.vetclinic.exception.UnauthorizedException;
 import com.vetclinic.patterns.adapter.EmailServiceAdapter;
+import com.vetclinic.patterns.adapter.SmsServiceAdapter;
 import com.vetclinic.patterns.chain.RegistrationValidationChain;
 import com.vetclinic.patterns.chain.ValidationResult;
 import com.vetclinic.patterns.factory.NotificationFactory;
@@ -51,9 +52,11 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailServiceAdapter emailServiceAdapter;
+    private final SmsServiceAdapter smsServiceAdapter;
     private final RegistrationValidationChain validationChain;
     private final NotificationFactory notificationFactory;
     private final EmailTemplateService emailTemplateService;
+    private final SmsTemplateService smsTemplateService;
 
     @Value("${app.frontend-url}")
     private String frontendUrl;
@@ -374,6 +377,17 @@ public class AuthService {
         } catch (Exception e) {
             log.error("Failed to send password reset email to: {}", user.getEmail(), e);
         }
+        
+        // Enviar SMS
+        if (user.getPhone() != null && smsServiceAdapter.isAvailable()) {
+            try {
+                String smsMessage = smsTemplateService.getPasswordResetSms(user.getFullName(), resetLink);
+                smsServiceAdapter.sendSms(user.getPhone(), smsMessage);
+                log.info("✅ SMS de restablecimiento de contraseña enviado a: {}", user.getPhone());
+            } catch (Exception e) {
+                log.error("Error al enviar SMS de restablecimiento de contraseña a: {}", user.getPhone(), e);
+            }
+        }
     }
 
     private void sendPasswordChangedEmail(User user) {
@@ -388,6 +402,17 @@ public class AuthService {
             log.info("Password changed email sent to: {}", user.getEmail());
         } catch (Exception e) {
             log.error("Failed to send password changed email to: {}", user.getEmail(), e);
+        }
+        
+        // Enviar SMS
+        if (user.getPhone() != null && smsServiceAdapter.isAvailable()) {
+            try {
+                String smsMessage = smsTemplateService.getPasswordChangedSms(user.getFullName());
+                smsServiceAdapter.sendSms(user.getPhone(), smsMessage);
+                log.info("✅ SMS de contraseña actualizada enviado a: {}", user.getPhone());
+            } catch (Exception e) {
+                log.error("Error al enviar SMS de contraseña actualizada a: {}", user.getPhone(), e);
+            }
         }
     }
 }

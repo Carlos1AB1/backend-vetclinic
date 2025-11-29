@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/vetclinic_db
-    username: postgres
-    password: 
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/vetclinic_db}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:} 
   jpa:
     hibernate:
       ddl-auto: update

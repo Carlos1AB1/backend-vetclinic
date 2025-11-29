@@ -3,6 +3,7 @@ package com.vetclinic.service;
 import com.vetclinic.dto.owner.CreateOwnerRequest;
 import com.vetclinic.dto.owner.OwnerDTO;
 import com.vetclinic.dto.owner.UpdateOwnerRequest;
+import com.vetclinic.entity.Appointment;
 import com.vetclinic.entity.Owner;
 import com.vetclinic.entity.Role;
 import com.vetclinic.entity.User;
@@ -10,7 +11,11 @@ import com.vetclinic.exception.BadRequestException;
 import com.vetclinic.exception.DuplicateResourceException;
 import com.vetclinic.exception.ResourceNotFoundException;
 import com.vetclinic.patterns.adapter.EmailServiceAdapter;
+import com.vetclinic.patterns.adapter.SmsServiceAdapter;
+import com.vetclinic.repository.AppointmentRepository;
+import com.vetclinic.repository.InformedConsentRepository;
 import com.vetclinic.repository.OwnerRepository;
+import com.vetclinic.repository.PasswordResetTokenRepository;
 import com.vetclinic.repository.RoleRepository;
 import com.vetclinic.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityManager;
 
 import java.util.HashSet;
 import java.util.List;
@@ -39,9 +45,15 @@ public class OwnerService {
     private final OwnerRepository ownerRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final InformedConsentRepository informedConsentRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EntityManager entityManager;
     private final PasswordEncoder passwordEncoder;
     private final EmailServiceAdapter emailServiceAdapter;
+    private final SmsServiceAdapter smsServiceAdapter;
     private final EmailTemplateService emailTemplateService;
+    private final SmsTemplateService smsTemplateService;
 
     @Value("${app.frontend-url:http://localhost:5173}")
     private String frontendUrl;
@@ -126,7 +138,7 @@ public class OwnerService {
     }
 
     /**
-     * Enviar email de bienvenida al propietario
+     * Enviar email y SMS de bienvenida al propietario
      */
     private void sendOwnerWelcomeEmail(Owner owner, User user, String password) {
         String subject = "¡Bienvenido a VetClinic Pro!";
@@ -138,8 +150,21 @@ public class OwnerService {
                 loginUrl
         );
 
+        // Enviar email
         emailServiceAdapter.sendHtmlEmail(owner.getEmail(), subject, htmlBody);
         log.info("Email de bienvenida enviado al propietario: {}", owner.getEmail());
+        
+        // Enviar SMS si está disponible y el propietario tiene teléfono
+        if (owner.getPhone() != null && smsServiceAdapter.isAvailable()) {
+            try {
+                String smsMessage = smsTemplateService.getWelcomeSms(owner.getFullName());
+                smsServiceAdapter.sendSms(owner.getPhone(), smsMessage);
+                log.info("✅ SMS de bienvenida enviado al propietario: {}", owner.getPhone());
+            } catch (Exception e) {
+                log.error("Error al enviar SMS de bienvenida al propietario: {}", owner.getPhone(), e);
+                // No lanzar excepción para no fallar la creación del propietario
+            }
+        }
     }
 
     /**
@@ -278,11 +303,64 @@ public class OwnerService {
                 "Primero debe eliminar o transferir los pacientes.");
         }
 
+        // Eliminar citas asociadas físicamente antes de eliminar el propietario
+        // Buscar todas las citas del propietario (activas e inactivas)
+        List<Appointment> ownerAppointments = appointmentRepository.findByOwnerIdOrderByScheduledDateDesc(id);
+        if (!ownerAppointments.isEmpty()) {
+            log.info("Eliminando físicamente {} cita(s) asociada(s) al propietario", ownerAppointments.size());
+            // Eliminar físicamente las citas para evitar problemas de claves foráneas
+            for (Appointment appointment : ownerAppointments) {
+                appointmentRepository.delete(appointment);
+            }
+            entityManager.flush(); // Asegurar que las citas se eliminen antes de continuar
+            log.info("Citas eliminadas físicamente exitosamente");
+        }
+
+        // Verificar si tiene consentimientos informados asociados
+        long consentCount = informedConsentRepository.countByOwnerId(id);
+        if (consentCount > 0) {
+            throw new IllegalStateException("No se puede eliminar el propietario porque tiene " + 
+                consentCount + " consentimiento(s) informado(s) asociado(s). " +
+                "Primero debe eliminar los consentimientos.");
+        }
+
         // Eliminar usuario asociado primero
         if (owner.getUserId() != null) {
             userRepository.findById(owner.getUserId()).ifPresent(user -> {
                 log.info("Eliminando usuario asociado con ID: {}", user.getId());
-                userRepository.delete(user);
+                
+                try {
+                    // Verificar si el usuario es veterinario en alguna cita y eliminarlas primero
+                    // Buscar todas las citas donde el usuario es veterinario (activas e inactivas)
+                    List<Appointment> veterinarianAppointments = appointmentRepository.findByVeterinarianIdOrderByScheduledDateDesc(user.getId());
+                    if (!veterinarianAppointments.isEmpty()) {
+                        log.info("El usuario es veterinario en {} cita(s), eliminándolas primero", veterinarianAppointments.size());
+                        for (Appointment appointment : veterinarianAppointments) {
+                            appointmentRepository.delete(appointment);
+                        }
+                        entityManager.flush();
+                    }
+                    
+                    // Eliminar tokens de restablecimiento de contraseña primero usando consulta nativa
+                    int deletedTokens = entityManager.createNativeQuery(
+                        "DELETE FROM password_reset_tokens WHERE user_id = CAST(:userId AS UUID)"
+                    )
+                    .setParameter("userId", user.getId().toString())
+                    .executeUpdate();
+                    
+                    log.info("Tokens de restablecimiento de contraseña eliminados: {} para el usuario: {}", deletedTokens, user.getId());
+                    
+                    // Forzar flush para asegurar que los tokens se eliminen antes del usuario
+                    entityManager.flush();
+                    
+                    // Ahora eliminar el usuario
+                    userRepository.delete(user);
+                    entityManager.flush(); // Asegurar que el usuario se elimine
+                } catch (Exception e) {
+                    log.error("Error al eliminar usuario asociado: {}", e.getMessage(), e);
+                    log.error("Stack trace completo:", e);
+                    throw new IllegalStateException("No se puede eliminar el propietario porque hay un error al eliminar el usuario asociado: " + e.getMessage());
+                }
             });
         }
 

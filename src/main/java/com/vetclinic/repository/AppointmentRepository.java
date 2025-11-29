@@ -39,6 +39,11 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
      * Encontrar citas por veterinario
      */
     List<Appointment> findByVeterinarianIdAndIsActiveTrueOrderByScheduledDateDesc(UUID veterinarianId);
+    
+    /**
+     * Encontrar todas las citas por veterinario (activas e inactivas)
+     */
+    List<Appointment> findByVeterinarianIdOrderByScheduledDateDesc(UUID veterinarianId);
 
     /**
      * Encontrar citas por estado
@@ -104,6 +109,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
      * Contar citas por estado
      */
     long countByStatusAndIsActiveTrue(AppointmentStatus status);
+
+    /**
+     * Contar citas por propietario
+     */
+    @Query("SELECT COUNT(a) FROM Appointment a WHERE a.owner.id = :ownerId")
+    long countByOwnerId(@Param("ownerId") Long ownerId);
 
     /**
      * Buscar citas próximas (siguientes 7 días)

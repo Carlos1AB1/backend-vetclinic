@@ -3,8 +3,10 @@ package com.vetclinic.patterns.observer;
 import com.vetclinic.entity.Appointment;
 import com.vetclinic.entity.Owner;
 import com.vetclinic.patterns.adapter.EmailServiceAdapter;
+import com.vetclinic.patterns.adapter.SmsServiceAdapter;
 import com.vetclinic.repository.AppointmentRepository;
 import com.vetclinic.service.EmailTemplateService;
+import com.vetclinic.service.SmsTemplateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -27,7 +29,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class AppointmentNotificationObserver {
 
     private final EmailServiceAdapter emailServiceAdapter;
+    private final SmsServiceAdapter smsServiceAdapter;
     private final EmailTemplateService emailTemplateService;
+    private final SmsTemplateService smsTemplateService;
     private final AppointmentRepository appointmentRepository;
     
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy 'a las' HH:mm");
@@ -136,6 +140,23 @@ public class AppointmentNotificationObserver {
         } else {
             log.error("⚠ No se puede enviar correo - Owner o email es null para cita ID: {}", appointment.getId());
         }
+        
+        // Enviar SMS
+        if (owner != null && owner.getPhone() != null && smsServiceAdapter.isAvailable()) {
+            try {
+                String smsMessage = smsTemplateService.getAppointmentCreatedSms(
+                    owner.getFullName(),
+                    appointment.getPatient().getName(),
+                    appointment.getScheduledDate().format(DATE_FORMATTER),
+                    appointment.getAppointmentType()
+                );
+                smsServiceAdapter.sendSms(owner.getPhone(), smsMessage);
+                log.info("✅ SMS de cita creada enviado a: {}", owner.getPhone());
+            } catch (Exception e) {
+                log.error("Error al enviar SMS de cita creada a: {}", owner.getPhone(), e);
+            }
+        }
+        
         log.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     }
 
@@ -152,6 +173,21 @@ public class AppointmentNotificationObserver {
             );
             emailServiceAdapter.sendHtmlEmail(owner.getEmail(), subject, htmlBody);
             log.info("Email HTML de cita confirmada enviado a: {}", owner.getEmail());
+        }
+        
+        // Enviar SMS
+        if (owner != null && owner.getPhone() != null && smsServiceAdapter.isAvailable()) {
+            try {
+                String smsMessage = smsTemplateService.getAppointmentConfirmedSms(
+                    owner.getFullName(),
+                    appointment.getPatient().getName(),
+                    appointment.getScheduledDate().format(DATE_FORMATTER)
+                );
+                smsServiceAdapter.sendSms(owner.getPhone(), smsMessage);
+                log.info("✅ SMS de cita confirmada enviado a: {}", owner.getPhone());
+            } catch (Exception e) {
+                log.error("Error al enviar SMS de cita confirmada a: {}", owner.getPhone(), e);
+            }
         }
     }
 
@@ -211,6 +247,24 @@ public class AppointmentNotificationObserver {
             log.error("   Stack trace:", e);
             throw e; // Re-lanzar para que se capture en el catch superior
         }
+        
+        // Enviar SMS
+        if (owner.getPhone() != null && smsServiceAdapter.isAvailable()) {
+            try {
+                String patientName = appointment.getPatient() != null ? appointment.getPatient().getName() : "N/A";
+                String scheduledDate = appointment.getScheduledDate() != null ? 
+                    appointment.getScheduledDate().format(DATE_FORMATTER) : "N/A";
+                String smsMessage = smsTemplateService.getAppointmentCancelledSms(
+                    owner.getFullName(),
+                    patientName,
+                    scheduledDate
+                );
+                smsServiceAdapter.sendSms(owner.getPhone(), smsMessage);
+                log.info("✅ SMS de cita cancelada enviado a: {}", owner.getPhone());
+            } catch (Exception e) {
+                log.error("Error al enviar SMS de cita cancelada a: {}", owner.getPhone(), e);
+        }
+        }
         log.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     }
 
@@ -226,6 +280,20 @@ public class AppointmentNotificationObserver {
             );
             emailServiceAdapter.sendHtmlEmail(owner.getEmail(), subject, htmlBody);
             log.info("Email HTML de cita completada enviado a: {}", owner.getEmail());
+        }
+        
+        // Enviar SMS
+        if (owner != null && owner.getPhone() != null && smsServiceAdapter.isAvailable()) {
+            try {
+                String smsMessage = smsTemplateService.getAppointmentCompletedSms(
+                    owner.getFullName(),
+                    appointment.getPatient().getName()
+                );
+                smsServiceAdapter.sendSms(owner.getPhone(), smsMessage);
+                log.info("✅ SMS de cita completada enviado a: {}", owner.getPhone());
+            } catch (Exception e) {
+                log.error("Error al enviar SMS de cita completada a: {}", owner.getPhone(), e);
+            }
         }
     }
 
@@ -253,6 +321,24 @@ public class AppointmentNotificationObserver {
         } else {
             log.error("⚠ No se puede enviar correo de cambio de estado - Owner o email es null para cita ID: {}", appointment.getId());
         }
+        
+        // Enviar SMS
+        if (owner != null && owner.getPhone() != null && smsServiceAdapter.isAvailable()) {
+            try {
+                String smsMessage = smsTemplateService.getAppointmentStatusChangedSms(
+                    owner.getFullName(),
+                    appointment.getPatient().getName(),
+                    appointment.getScheduledDate().format(DATE_FORMATTER),
+                    previousStatus,
+                    appointment.getStatus().toString()
+                );
+                smsServiceAdapter.sendSms(owner.getPhone(), smsMessage);
+                log.info("✅ SMS de cambio de estado enviado a: {}", owner.getPhone());
+            } catch (Exception e) {
+                log.error("Error al enviar SMS de cambio de estado a: {}", owner.getPhone(), e);
+        }
+        }
+        
         log.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     }
 }

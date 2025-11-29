@@ -4,6 +4,7 @@ import com.vetclinic.entity.Appointment;
 import com.vetclinic.entity.AppointmentActionToken.ActionType;
 import com.vetclinic.entity.Owner;
 import com.vetclinic.patterns.adapter.EmailServiceAdapter;
+import com.vetclinic.patterns.adapter.SmsServiceAdapter;
 import com.vetclinic.patterns.strategy.Reminder24HoursStrategy;
 import com.vetclinic.patterns.strategy.Reminder1HourStrategy;
 import com.vetclinic.patterns.strategy.ReminderStrategy;
@@ -30,10 +31,12 @@ public class ReminderService {
 
     private final AppointmentRepository appointmentRepository;
     private final EmailServiceAdapter emailServiceAdapter;
+    private final SmsServiceAdapter smsServiceAdapter;
     private final Reminder24HoursStrategy reminder24HoursStrategy;
     private final Reminder1HourStrategy reminder1HourStrategy;
     private final AppointmentActionTokenService tokenService;
     private final EmailTemplateService emailTemplateService;
+    private final SmsTemplateService smsTemplateService;
     
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy 'a las' HH:mm");
 
@@ -88,6 +91,22 @@ public class ReminderService {
             emailServiceAdapter.sendHtmlEmail(owner.getEmail(), subject, htmlBody);
             log.info("Recordatorio HTML {} enviado para cita ID: {} a {}", 
                 strategy.getReminderType(), appointment.getId(), owner.getEmail());
+
+            // Enviar SMS
+            if (owner.getPhone() != null && smsServiceAdapter.isAvailable()) {
+                try {
+                    String smsMessage = smsTemplateService.getAppointmentReminderSms(
+                        owner.getFullName(),
+                        appointment.getPatient().getName(),
+                        appointment.getScheduledDate().format(DATE_FORMATTER),
+                        strategy.getHoursBefore()
+                    );
+                    smsServiceAdapter.sendSms(owner.getPhone(), smsMessage);
+                    log.info("✅ SMS de recordatorio {} enviado a: {}", strategy.getReminderType(), owner.getPhone());
+                } catch (Exception e) {
+                    log.error("Error al enviar SMS de recordatorio a: {}", owner.getPhone(), e);
+                }
+            }
 
         } catch (Exception e) {
             log.error("Error al enviar recordatorio para cita ID: {}", appointment.getId(), e);

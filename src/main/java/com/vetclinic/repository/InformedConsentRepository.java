@@ -57,6 +57,12 @@ public interface InformedConsentRepository extends JpaRepository<InformedConsent
      * Contar consentimientos firmados
      */
     long countByIsSignedTrueAndIsActiveTrue();
+
+    /**
+     * Contar consentimientos por propietario
+     */
+    @Query("SELECT COUNT(ic) FROM InformedConsent ic WHERE ic.owner.id = :ownerId")
+    long countByOwnerId(@Param("ownerId") Long ownerId);
 }
 
 

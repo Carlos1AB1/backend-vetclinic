@@ -70,7 +70,7 @@ public class EmailTemplateService {
             if (variableName.equals("logoBase64") || variableName.equals("content")) {
                 matcher.appendReplacement(result, value);
             } else {
-                matcher.appendReplacement(result, Matcher.quoteReplacement(value));
+            matcher.appendReplacement(result, Matcher.quoteReplacement(value));
             }
         }
         matcher.appendTail(result);

@@ -11,9 +11,9 @@ spring:
     active: dev
   
   datasource:
-    url: jdbc:postgresql://localhost:5432/vetclinic_db
-    username: postgres
-    password:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/vetclinic_db}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -122,3 +122,7 @@ app:
   appointment-action-token-expiration: 172800000 # 48 hours (2 days)
   max-login-attempts: 5
   account-lock-duration: 900000 # 15 minutes
+  twilio:
+    account-sid: ${TWILIO_ACCOUNT_SID:}
+    auth-token: ${TWILIO_AUTH_TOKEN:}
+    phone-number: ${TWILIO_PHONE_NUMBER:}

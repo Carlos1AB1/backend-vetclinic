@@ -344,7 +344,7 @@ public class AppointmentService {
 
         stateContext.cancel(appointment);
         Appointment savedAppointment = appointmentRepository.save(appointment);
-        
+
         // IMPORTANTE: Forzar carga de relaciones LAZY dentro de la transacción
         // antes de publicar el evento (para evitar LazyInitializationException en @Async)
         log.error("   Estado nuevo: {}", savedAppointment.getStatus().name());
