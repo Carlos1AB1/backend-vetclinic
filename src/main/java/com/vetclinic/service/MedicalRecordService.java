@@ -64,6 +64,7 @@ public class MedicalRecordService {
             .conSignosVitales(request.getVitalSigns())
             .conPeso(request.getWeight())
             .conTemperatura(request.getTemperature())
+            .conFrecuenciaCardiaca(request.getHeartRate())
             .conNotas(request.getNotes())
             .requiereSeguimiento(request.getFollowUpRequired() != null ? request.getFollowUpRequired() : false)
             .conFechaSeguimiento(request.getFollowUpDate())
@@ -201,6 +202,7 @@ public class MedicalRecordService {
         if (request.getVitalSigns() != null) medicalRecord.setVitalSigns(request.getVitalSigns());
         if (request.getWeight() != null) medicalRecord.setWeight(request.getWeight());
         if (request.getTemperature() != null) medicalRecord.setTemperature(request.getTemperature());
+        if (request.getHeartRate() != null) medicalRecord.setHeartRate(request.getHeartRate());
         if (request.getNotes() != null) medicalRecord.setNotes(request.getNotes());
         if (request.getFollowUpRequired() != null) medicalRecord.setFollowUpRequired(request.getFollowUpRequired());
         if (request.getFollowUpDate() != null) medicalRecord.setFollowUpDate(request.getFollowUpDate());
@@ -269,6 +271,7 @@ public class MedicalRecordService {
         dto.setVitalSigns(medicalRecord.getVitalSigns());
         dto.setWeight(medicalRecord.getWeight());
         dto.setTemperature(medicalRecord.getTemperature());
+        dto.setHeartRate(medicalRecord.getHeartRate());
         dto.setNotes(medicalRecord.getNotes());
         dto.setFollowUpRequired(medicalRecord.getFollowUpRequired());
         dto.setFollowUpDate(medicalRecord.getFollowUpDate());

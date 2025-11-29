@@ -195,9 +195,16 @@ public class AppointmentController {
     @PutMapping("/{id}/cancel")
     @PreAuthorize("hasAnyRole('ADMIN', 'RECEPTIONIST', 'VETERINARIAN')")
     public ResponseEntity<ApiResponse<String>> cancelAppointment(@PathVariable Long id) {
-        log.info("PUT /api/appointments/{}/cancel - Cancelando cita usando Facade Pattern", id);
+        log.error("═══════════════════════════════════════════════════════════════");
+        log.error("🔴 ENDPOINT CANCELAR CITA LLAMADO");
+        log.error("   Path: PUT /api/appointments/{}/cancel", id);
+        log.error("   Cita ID: {}", id);
+        log.error("═══════════════════════════════════════════════════════════════");
+        
         // Usar Facade Pattern para cancelar cita completa
         clinicaFacade.cancelarCita(id);
+        
+        log.error("✅ Facade.cancelarCita() ejecutado - Retornando respuesta");
         return ResponseEntity.ok(ApiResponse.success("Cita cancelada exitosamente", null));
     }
 

@@ -51,6 +51,10 @@ public class CreateMedicalRecordRequest {
     @DecimalMax(value = "45.0", message = "La temperatura no puede exceder 45°C")
     private BigDecimal temperature;
 
+    @DecimalMin(value = "0.0", inclusive = false, message = "La frecuencia cardíaca debe ser mayor que 0")
+    @DecimalMax(value = "300.0", message = "La frecuencia cardíaca no puede exceder 300 bpm")
+    private BigDecimal heartRate;
+
     @Size(max = 5000, message = "Las notas no pueden exceder 5000 caracteres")
     private String notes;
 

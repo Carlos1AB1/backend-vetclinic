@@ -284,6 +284,14 @@ public class AppointmentService {
 
         // Publicar evento si hubo cambio de estado
         if (eventType != null) {
+            log.error("═══════════════════════════════════════════════════════════════");
+            log.error("🚨 PUBLICANDO EVENTO DE ACTUALIZACIÓN");
+            log.error("   Cita ID: {}", updatedAppointment.getId());
+            log.error("   Tipo de evento: {}", eventType);
+            log.error("   Estado anterior: {}", previousStatus);
+            log.error("   Estado nuevo: {}", updatedAppointment.getStatus());
+            log.error("═══════════════════════════════════════════════════════════════");
+            
             AppointmentEvent event = new AppointmentEvent(
                 this,
                 updatedAppointment,
@@ -291,6 +299,10 @@ public class AppointmentService {
                 previousStatus
             );
             eventPublisher.publishEvent(event);
+            
+            log.error("✅ Evento publicado exitosamente");
+        } else {
+            log.error("⚠ No se publicó evento - eventType es null para cita ID: {}", updatedAppointment.getId());
         }
 
         return mapToDTO(updatedAppointment);
@@ -300,12 +312,30 @@ public class AppointmentService {
      * Cancelar cita usando State Pattern
      */
     public void cancelAppointment(Long id) {
-        log.info("Cancelando cita con ID: {}", id);
+        log.error("═══════════════════════════════════════════════════════════════");
+        log.error("🚨 CANCELANDO CITA - ID: {}", id);
+        log.error("═══════════════════════════════════════════════════════════════");
 
         Appointment appointment = appointmentRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada con ID: " + id));
 
         String previousStatus = appointment.getStatus().name();
+        log.error("   Estado anterior: {}", previousStatus);
+        
+        // IMPORTANTE: Cargar relaciones LAZY antes de publicar evento (para evitar LazyInitializationException en @Async)
+        log.error("   Cargando relaciones (owner, patient, veterinarian)...");
+        if (appointment.getOwner() != null) {
+            appointment.getOwner().getEmail(); // Forzar carga del owner
+            log.error("   ✅ Owner cargado: {}", appointment.getOwner().getFullName());
+        }
+        if (appointment.getPatient() != null) {
+            appointment.getPatient().getName(); // Forzar carga del patient
+            log.error("   ✅ Patient cargado: {}", appointment.getPatient().getName());
+        }
+        if (appointment.getVeterinarian() != null) {
+            appointment.getVeterinarian().getFirstName(); // Forzar carga del veterinarian
+            log.error("   ✅ Veterinarian cargado");
+        }
 
         // Usar State Pattern para cancelar
         if (!stateContext.canBeRescheduled(appointment)) {
@@ -314,10 +344,39 @@ public class AppointmentService {
 
         stateContext.cancel(appointment);
         Appointment savedAppointment = appointmentRepository.save(appointment);
-
-        log.info("Cita cancelada exitosamente");
+        
+        // IMPORTANTE: Forzar carga de relaciones LAZY dentro de la transacción
+        // antes de publicar el evento (para evitar LazyInitializationException en @Async)
+        log.error("   Estado nuevo: {}", savedAppointment.getStatus().name());
+        log.error("   Forzando carga de relaciones dentro de la transacción...");
+        
+        // Acceder a las relaciones para forzar su carga dentro de la transacción
+        Owner owner = savedAppointment.getOwner();
+        Patient patient = savedAppointment.getPatient();
+        User veterinarian = savedAppointment.getVeterinarian();
+        
+        if (owner != null) {
+            String ownerEmail = owner.getEmail(); // Forzar carga
+            String ownerName = owner.getFullName(); // Forzar carga
+            log.error("   ✅ Owner cargado: {} ({})", ownerName, ownerEmail);
+        } else {
+            log.error("   ❌ ERROR: Owner es NULL!");
+        }
+        
+        if (patient != null) {
+            String patientName = patient.getName(); // Forzar carga
+            log.error("   ✅ Patient cargado: {}", patientName);
+        }
+        
+        if (veterinarian != null) {
+            String vetName = veterinarian.getFullName(); // Forzar carga
+            log.error("   ✅ Veterinarian cargado: {}", vetName);
+        }
+        
+        log.error("✅ Cita cancelada en BD - Publicando evento CANCELLED");
 
         // Publicar evento usando Observer Pattern
+        // Las relaciones ya están cargadas dentro de la transacción
         AppointmentEvent event = new AppointmentEvent(
             this,
             savedAppointment,
@@ -325,6 +384,9 @@ public class AppointmentService {
             previousStatus
         );
         eventPublisher.publishEvent(event);
+        
+        log.error("✅ Evento CANCELLED publicado para cita ID: {}", id);
+        log.error("═══════════════════════════════════════════════════════════════");
     }
 
     /**

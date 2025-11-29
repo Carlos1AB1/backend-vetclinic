@@ -72,6 +72,11 @@ public class MedicalRecordBuilder {
         return this;
     }
 
+    public MedicalRecordBuilder conFrecuenciaCardiaca(BigDecimal heartRate) {
+        this.medicalRecord.setHeartRate(heartRate);
+        return this;
+    }
+
     public MedicalRecordBuilder conNotas(String notes) {
         this.medicalRecord.setNotes(notes);
         return this;

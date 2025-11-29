@@ -60,6 +60,9 @@ public class MedicalRecord {
     @Column(name = "temperature")
     private java.math.BigDecimal temperature;
 
+    @Column(name = "heart_rate")
+    private java.math.BigDecimal heartRate;
+
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 

@@ -91,10 +91,15 @@ public class ClinicaFacade {
      */
     @Transactional
     public void cancelarCita(Long appointmentId) {
-        log.info("FACADE: Cancelando cita ID: {}", appointmentId);
+        log.error("═══════════════════════════════════════════════════════════════");
+        log.error("🔵 FACADE: Cancelando cita ID: {}", appointmentId);
+        log.error("═══════════════════════════════════════════════════════════════");
 
         // Cancelar usando el servicio (el servicio ya publica el evento CANCELLED)
         appointmentService.cancelAppointment(appointmentId);
+
+        log.error("✅ FACADE: appointmentService.cancelAppointment() completado");
+        log.error("═══════════════════════════════════════════════════════════════");
 
         log.info("FACADE: Cita cancelada exitosamente");
     }

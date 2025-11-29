@@ -39,6 +39,7 @@ public class MedicalRecordDTO {
     private String vitalSigns;
     private BigDecimal weight;
     private BigDecimal temperature;
+    private BigDecimal heartRate;
     private String notes;
     
     // Seguimiento
