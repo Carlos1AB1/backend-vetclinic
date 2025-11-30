@@ -35,10 +35,24 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Obtener usuarios del equipo (excluyendo propietarios/clientes)
+     * Solo devuelve ADMIN, VETERINARIAN, RECEPTIONIST
+     */
     @Transactional(readOnly = true)
     public Page<UserDTO> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable)
+        return userRepository.findTeamMembers(pageable)
                 .map(this::mapToDTO);
+    }
+
+    /**
+     * Obtener solo veterinarios activos
+     */
+    @Transactional(readOnly = true)
+    public java.util.List<UserDTO> getVeterinarians() {
+        return userRepository.findVeterinarians().stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional

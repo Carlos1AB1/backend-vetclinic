@@ -37,15 +37,15 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST', 'OWNER')")  // 👈 CAMBIAR AQUÍ
+    @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST')")
     @Operation(
-        summary = "Listar todos los usuarios",
-        description = "Obtiene una lista paginada de todos los usuarios del sistema"
+        summary = "Listar miembros del equipo",
+        description = "Obtiene una lista paginada de los miembros del equipo (Admin, Veterinarios, Recepcionistas). No incluye propietarios/clientes."
     )
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "No autorizado - Solo administradores")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "No autorizado")
     })
     public ResponseEntity<ApiResponse<Page<UserDTO>>> getAllUsers(
         @Parameter(description = "Parámetros de paginación (page, size, sort)") Pageable pageable
@@ -53,6 +53,23 @@ public class UserController {
         Page<UserDTO> users = userService.getAllUsers(pageable);
         return ResponseEntity.ok(
                 ApiResponse.success("Users retrieved successfully", users)
+        );
+    }
+
+    @GetMapping("/veterinarians")
+    @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST')")
+    @Operation(
+        summary = "Listar veterinarios",
+        description = "Obtiene una lista de todos los veterinarios activos del sistema"
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado")
+    })
+    public ResponseEntity<ApiResponse<java.util.List<UserDTO>>> getVeterinarians() {
+        java.util.List<UserDTO> veterinarians = userService.getVeterinarians();
+        return ResponseEntity.ok(
+                ApiResponse.success("Veterinarians retrieved successfully", veterinarians)
         );
     }
 
