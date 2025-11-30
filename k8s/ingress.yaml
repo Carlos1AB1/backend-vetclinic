@@ -8,13 +8,14 @@ metadata:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
-    # alb.ingress.kubernetes.io/ssl-redirect: '443'  # Descomenta cuando tengas certificado SSL
-    # alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:340914758022:certificate/CERTIFICATE_ID"  # Descomenta y configura cuando tengas certificado SSL
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:340914758022:certificate/5f23fb25-4ac8-491b-9924-136b4779d3e6"
     alb.ingress.kubernetes.io/healthcheck-path: /api/actuator/health
     alb.ingress.kubernetes.io/backend-protocol: HTTP
 spec:
+  ingressClassName: alb
   rules:
-  - host: api.vetclinic.com
+  - host: api.vetclinicpro.app
     http:
       paths:
       - path: /
@@ -24,7 +25,7 @@ spec:
             name: backend-service
             port:
               number: 8081
-  - host: vetclinic.com
+  - host: vetclinicpro.app
     http:
       paths:
       - path: /
@@ -34,7 +35,7 @@ spec:
             name: frontend-service
             port:
               number: 80
-  - host: www.vetclinic.com
+  - host: www.vetclinicpro.app
     http:
       paths:
       - path: /

@@ -52,6 +52,7 @@ public class SecurityConfig {
                         // Public endpoints
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/actuator/health/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         // Endpoints públicos para acciones desde recordatorios (RF018)
                         .requestMatchers(HttpMethod.GET, "/appointments/{id}/confirm").permitAll()

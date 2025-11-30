@@ -8,8 +8,8 @@ data:
   DATABASE_URL: "jdbc:postgresql://postgres-service:5432/vetclinic_db"
   DATABASE_USERNAME: "postgres"
   SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
-  FRONTEND_URL: "http://a5cd7f33460544019ad9cb2a7cfcc164-505991334.us-east-1.elb.amazonaws.com"
-  BACKEND_URL: "http://a41b246d323a84b818dcf01600bb9463-1483797574.us-east-1.elb.amazonaws.com:8081"
-  CORS_ORIGINS: "*"
+  FRONTEND_URL: "https://www.vetclinicpro.app"
+  BACKEND_URL: "https://api.vetclinicpro.app"
+  CORS_ORIGINS: "https://www.vetclinicpro.app,https://vetclinicpro.app,http://www.vetclinicpro.app,http://vetclinicpro.app"
   CLINIC_NAME: "VetClinic Pro"
 
