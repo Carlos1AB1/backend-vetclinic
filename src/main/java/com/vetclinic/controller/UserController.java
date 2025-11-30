@@ -57,10 +57,10 @@ public class UserController {
     }
 
     @GetMapping("/veterinarians")
-    @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'RECEPTIONIST')")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
         summary = "Listar veterinarios",
-        description = "Obtiene una lista de todos los veterinarios activos del sistema"
+        description = "Obtiene una lista de todos los veterinarios activos del sistema. Disponible para todos los usuarios autenticados."
     )
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente"),

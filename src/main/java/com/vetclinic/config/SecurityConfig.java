@@ -60,7 +60,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/appointments/{id}/reschedule").permitAll()
 
                         // User endpoints - Specific endpoints first, then admin-only
+                        .requestMatchers(HttpMethod.GET, "/users/veterinarians").authenticated() // Any authenticated user can see veterinarians
                         .requestMatchers(HttpMethod.GET, "/users/username/**").hasAnyRole("ADMIN", "VETERINARIAN", "RECEPTIONIST", "OWNER")
+                        .requestMatchers(HttpMethod.GET, "/users/role/**").hasAnyRole("ADMIN", "VETERINARIAN", "RECEPTIONIST", "OWNER")
                         .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("ADMIN", "VETERINARIAN", "RECEPTIONIST", "OWNER")
                         .requestMatchers("/users/**").hasRole("ADMIN")
 
