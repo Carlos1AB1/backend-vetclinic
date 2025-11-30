@@ -39,7 +39,16 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+        // Handle wildcard origin
+        if ("*".equals(allowedOrigins.trim())) {
+            configuration.addAllowedOriginPattern("*");
+            // Cannot use allowCredentials with wildcard, set to false
+            configuration.setAllowCredentials(false);
+        } else {
+            configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+            configuration.setAllowCredentials(allowCredentials);
+        }
+        
         configuration.setAllowedMethods(Arrays.asList(allowedMethods.split(",")));
         
         if ("*".equals(allowedHeaders)) {
@@ -49,7 +58,6 @@ public class CorsConfig {
         }
         
         configuration.setExposedHeaders(Arrays.asList(exposedHeaders.split(",")));
-        configuration.setAllowCredentials(allowCredentials);
         configuration.setMaxAge(maxAge);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

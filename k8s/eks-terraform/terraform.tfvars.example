@@ -1,0 +1,9 @@
+# Archivo de ejemplo para variables de Terraform
+# Copia este archivo a terraform.tfvars y actualiza los valores
+
+aws_region   = "us-east-1"
+environment  = "prod"
+cluster_name = "vetclinic-eks"
+vpc_cidr     = "10.0.0.0/16"
+aws_account_id = "123456789012"
+

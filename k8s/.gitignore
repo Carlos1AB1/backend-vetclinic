@@ -1,0 +1,18 @@
+# Secrets (no versionar)
+secret-backend.yaml
+*.secret.yaml
+
+# Terraform
+eks-terraform/.terraform/
+eks-terraform/*.tfstate
+eks-terraform/*.tfstate.*
+eks-terraform/.terraform.lock.hcl
+eks-terraform/terraform.tfvars
+
+# Archivos temporales
+*.bak
+*.tmp
+
+# Logs
+*.log
+

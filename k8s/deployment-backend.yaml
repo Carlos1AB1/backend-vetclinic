@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: vetclinic
+  labels:
+    app: backend
+    component: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+        component: api
+    spec:
+      containers:
+      - name: backend
+        image: 340914758022.dkr.ecr.us-east-1.amazonaws.com/vetclinic-backend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8081
+          name: http
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: backend-config
+        - secretRef:
+            name: backend-secrets
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/actuator/health
+            port: 8081
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/actuator/health
+            port: 8081
+          initialDelaySeconds: 40
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: logs
+        emptyDir: {}
+      restartPolicy: Always
+
