@@ -78,6 +78,9 @@ public class MedicalRecord {
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Prescription> prescriptions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<InformedConsent> informedConsents = new ArrayList<>();
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -100,6 +103,22 @@ public class MedicalRecord {
     public void removePrescription(Prescription prescription) {
         prescriptions.remove(prescription);
         prescription.setMedicalRecord(null);
+    }
+
+    /**
+     * Helper method para añadir consentimiento informado
+     */
+    public void addInformedConsent(InformedConsent consent) {
+        informedConsents.add(consent);
+        consent.setMedicalRecord(this);
+    }
+
+    /**
+     * Helper method para eliminar consentimiento informado
+     */
+    public void removeInformedConsent(InformedConsent consent) {
+        informedConsents.remove(consent);
+        consent.setMedicalRecord(null);
     }
 
     /**

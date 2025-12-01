@@ -230,8 +230,10 @@ class MedicalRecordRepositoryTest {
     @Test
     @DisplayName("Should find latest medical record by patient")
     void shouldFindLatestMedicalRecordByPatient() {
-        MedicalRecord latestRecord = medicalRecordRepository.findLatestByPatientId(testPatient.getId());
+        List<MedicalRecord> latestRecords = medicalRecordRepository.findLatestByPatientId(testPatient.getId());
 
+        assertThat(latestRecords).isNotEmpty();
+        MedicalRecord latestRecord = latestRecords.get(0);
         assertThat(latestRecord).isNotNull();
         assertThat(latestRecord.getDiagnosis()).isEqualTo("Dermatitis alérgica");
     }

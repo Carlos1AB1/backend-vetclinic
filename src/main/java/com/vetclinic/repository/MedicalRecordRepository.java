@@ -78,6 +78,13 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Lo
      * Obtener último registro médico de un paciente
      */
     @Query("SELECT mr FROM MedicalRecord mr WHERE mr.patient.id = :patientId " +
-           "AND mr.isActive = true ORDER BY mr.recordDate DESC LIMIT 1")
-    MedicalRecord findLatestByPatientId(@Param("patientId") Long patientId);
+           "AND mr.isActive = true ORDER BY mr.recordDate DESC")
+    List<MedicalRecord> findLatestByPatientId(@Param("patientId") Long patientId);
+
+    /**
+     * Obtener la historia clínica activa principal de un paciente (una por paciente)
+     */
+    @Query("SELECT mr FROM MedicalRecord mr WHERE mr.patient.id = :patientId " +
+           "AND mr.isActive = true ORDER BY mr.createdAt ASC")
+    List<MedicalRecord> findActiveByPatientId(@Param("patientId") Long patientId);
 }

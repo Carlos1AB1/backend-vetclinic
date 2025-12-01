@@ -42,6 +42,10 @@ public class InformedConsent {
     @JoinColumn(name = "appointment_id")
     private Appointment appointment;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "medical_record_id")
+    private MedicalRecord medicalRecord;
+
     @Column(name = "procedure_type", nullable = false, length = 200)
     private String procedureType; // SURGERY, ANESTHESIA, VACCINATION, etc.
 

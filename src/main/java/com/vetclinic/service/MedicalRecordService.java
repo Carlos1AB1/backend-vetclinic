@@ -238,6 +238,80 @@ public class MedicalRecordService {
     }
 
     /**
+     * Crear o actualizar historia clínica automáticamente cuando se crea una cita
+     * SIEMPRE usa la misma historia clínica por paciente (una historia clínica por paciente)
+     * Si el paciente ya tiene historia clínica activa, se actualiza agregando la cita
+     * Si no tiene, se crea una nueva historia clínica con la cita
+     */
+    public MedicalRecordDTO createOrUpdateMedicalRecordFromAppointment(Long appointmentId) {
+        log.info("Creando o actualizando historia clínica para cita ID: {}", appointmentId);
+
+        // Obtener la cita
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada con ID: " + appointmentId));
+
+        Patient patient = appointment.getPatient();
+        User veterinarian = appointment.getVeterinarian();
+
+        // Buscar la historia clínica activa del paciente (debe haber solo una por paciente)
+        List<MedicalRecord> existingRecords = medicalRecordRepository.findActiveByPatientId(patient.getId());
+        MedicalRecord existingRecord = existingRecords != null && !existingRecords.isEmpty() ? existingRecords.get(0) : null;
+
+        if (existingRecord != null) {
+            // Si existe, actualizar agregando la información de la nueva cita
+            log.info("Actualizando historia clínica existente ID: {} con cita ID: {}", existingRecord.getId(), appointmentId);
+            
+            // Actualizar veterinario si es diferente
+            if (!existingRecord.getVeterinarian().getId().equals(veterinarian.getId())) {
+                existingRecord.setVeterinarian(veterinarian);
+            }
+            
+            // Actualizar fecha de registro a la más reciente
+            if (appointment.getScheduledDate().isAfter(existingRecord.getRecordDate())) {
+                existingRecord.setRecordDate(appointment.getScheduledDate());
+            }
+            
+            // Agregar información de la nueva cita a las notas
+            String appointmentNotes = String.format("\n\n[%s] Cita: %s - %s", 
+                appointment.getScheduledDate().toString(),
+                appointment.getAppointmentType(), 
+                appointment.getReason() != null ? appointment.getReason() : "Sin motivo especificado");
+            
+            if (existingRecord.getNotes() != null && !existingRecord.getNotes().isEmpty()) {
+                existingRecord.setNotes(existingRecord.getNotes() + appointmentNotes);
+            } else {
+                existingRecord.setNotes(appointmentNotes.trim());
+            }
+
+            MedicalRecord updatedRecord = medicalRecordRepository.save(existingRecord);
+            log.info("Historia clínica actualizada exitosamente con ID: {}", updatedRecord.getId());
+            return mapToDTO(updatedRecord);
+        } else {
+            // Si no existe, crear una nueva historia clínica (una por paciente)
+            log.info("Creando nueva historia clínica para paciente ID: {} con cita ID: {}", patient.getId(), appointmentId);
+            
+            MedicalRecordBuilder builder = new MedicalRecordBuilder()
+                .conPaciente(patient)
+                .conVeterinario(veterinarian)
+                .conCita(appointment)
+                .conFechaRegistro(appointment.getScheduledDate())
+                .conDiagnostico("Historia clínica iniciada - " + appointment.getAppointmentType())
+                .conTratamiento("En espera de evaluación durante la cita")
+                .conSintomas(appointment.getReason() != null ? appointment.getReason() : "Sin síntomas reportados")
+                .conNotas(String.format("[%s] Cita agendada: %s - %s", 
+                    appointment.getScheduledDate().toString(),
+                    appointment.getAppointmentType(), 
+                    appointment.getReason() != null ? appointment.getReason() : "Sin motivo especificado"))
+                .activo(true);
+
+            MedicalRecord newRecord = builder.build();
+            MedicalRecord savedRecord = medicalRecordRepository.save(newRecord);
+            log.info("Nueva historia clínica creada exitosamente con ID: {}", savedRecord.getId());
+            return mapToDTO(savedRecord);
+        }
+    }
+
+    /**
      * Mapear entidad a DTO
      */
     private MedicalRecordDTO mapToDTO(MedicalRecord medicalRecord) {
@@ -278,6 +352,8 @@ public class MedicalRecordService {
         dto.setIsActive(medicalRecord.getIsActive());
         dto.setPrescriptionCount(medicalRecord.getPrescriptions() != null ? 
                                 medicalRecord.getPrescriptions().size() : 0);
+        dto.setInformedConsentCount(medicalRecord.getInformedConsents() != null ? 
+                                   medicalRecord.getInformedConsents().size() : 0);
         dto.setCreatedAt(medicalRecord.getCreatedAt());
         dto.setUpdatedAt(medicalRecord.getUpdatedAt());
         

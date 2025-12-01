@@ -40,6 +40,7 @@ public class InformedConsentService {
     private final OwnerRepository ownerRepository;
     private final UserRepository userRepository;
     private final AppointmentRepository appointmentRepository;
+    private final MedicalRecordRepository medicalRecordRepository;
     private final DocumentExportFactory documentExportFactory;
 
     private static final String CONSENT_DOCUMENTS_DIR = "documents/consents";
@@ -77,6 +78,17 @@ public class InformedConsentService {
             Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada con ID: " + request.getAppointmentId()));
             consent.setAppointment(appointment);
+        }
+
+        // Asociar automáticamente a la historia clínica del paciente
+        List<MedicalRecord> medicalRecords = medicalRecordRepository.findActiveByPatientId(patient.getId());
+        if (medicalRecords != null && !medicalRecords.isEmpty()) {
+            MedicalRecord medicalRecord = medicalRecords.get(0);
+            consent.setMedicalRecord(medicalRecord);
+            medicalRecord.addInformedConsent(consent);
+            log.info("Consentimiento asociado a historia clínica ID: {}", medicalRecord.getId());
+        } else {
+            log.warn("No se encontró historia clínica activa para el paciente ID: {}. El consentimiento se creará sin asociación.", patient.getId());
         }
 
         InformedConsent savedConsent = consentRepository.save(consent);
@@ -215,6 +227,7 @@ public class InformedConsentService {
             .veterinarianId(consent.getVeterinarian().getId())
             .veterinarianName(consent.getVeterinarian().getFullName())
             .appointmentId(consent.getAppointment() != null ? consent.getAppointment().getId() : null)
+            .medicalRecordId(consent.getMedicalRecord() != null ? consent.getMedicalRecord().getId() : null)
             .procedureType(consent.getProcedureType())
             .procedureDescription(consent.getProcedureDescription())
             .risks(consent.getRisks())

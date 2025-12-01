@@ -260,6 +260,7 @@ class MedicalRecordTest {
                 now.plusDays(7),
                 true,
                 new ArrayList<>(),
+                new ArrayList<>(), // informedConsents
                 now,
                 now
         );

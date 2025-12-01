@@ -51,6 +51,7 @@ public class MedicalRecordDTO {
     
     // Contadores
     private Integer prescriptionCount;
+    private Integer informedConsentCount;
     
     // Auditoría
     private LocalDateTime createdAt;

@@ -22,6 +22,7 @@ import com.vetclinic.repository.OwnerRepository;
 import com.vetclinic.repository.PatientRepository;
 import com.vetclinic.repository.UserRepository;
 import com.vetclinic.service.AppointmentActionTokenService;
+import com.vetclinic.service.MedicalRecordService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -52,6 +53,7 @@ public class AppointmentService {
     private final AppointmentStateContext stateContext;
     private final ApplicationEventPublisher eventPublisher;
     private final AppointmentActionTokenService tokenService;
+    private final MedicalRecordService medicalRecordService;
 
     /**
      * Crear una nueva cita
@@ -96,6 +98,15 @@ public class AppointmentService {
         log.info("Guardando cita con fecha programada: {}", request.getScheduledDate());
         Appointment savedAppointment = appointmentRepository.save(appointment);
         log.info("Cita creada exitosamente con ID: {}, Fecha guardada: {}", savedAppointment.getId(), savedAppointment.getScheduledDate());
+
+        // Crear o actualizar historia clínica automáticamente
+        try {
+            medicalRecordService.createOrUpdateMedicalRecordFromAppointment(savedAppointment.getId());
+            log.info("Historia clínica creada/actualizada automáticamente para cita ID: {}", savedAppointment.getId());
+        } catch (Exception e) {
+            log.error("Error al crear/actualizar historia clínica para cita ID: {}: {}", savedAppointment.getId(), e.getMessage());
+            // No lanzamos la excepción para no interrumpir la creación de la cita
+        }
 
         // Publicar evento usando Observer Pattern (SOLO UNA VEZ)
         log.error("═══════════════════════════════════════════════════════════════");

@@ -26,6 +26,7 @@ public class InformedConsentDTO {
     private UUID veterinarianId;
     private String veterinarianName;
     private Long appointmentId;
+    private Long medicalRecordId;
     private String procedureType;
     private String procedureDescription;
     private String risks;
