@@ -12,10 +12,14 @@ import com.vetclinic.exception.DuplicateResourceException;
 import com.vetclinic.exception.ResourceNotFoundException;
 import com.vetclinic.patterns.adapter.EmailServiceAdapter;
 import com.vetclinic.patterns.adapter.SmsServiceAdapter;
+import com.vetclinic.repository.AppointmentActionTokenRepository;
 import com.vetclinic.repository.AppointmentRepository;
 import com.vetclinic.repository.InformedConsentRepository;
+import com.vetclinic.repository.MedicalRecordRepository;
 import com.vetclinic.repository.OwnerRepository;
 import com.vetclinic.repository.PasswordResetTokenRepository;
+import com.vetclinic.repository.PatientRepository;
+import com.vetclinic.repository.PrescriptionRepository;
 import com.vetclinic.repository.RoleRepository;
 import com.vetclinic.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +50,11 @@ public class OwnerService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final AppointmentRepository appointmentRepository;
+    private final AppointmentActionTokenRepository appointmentActionTokenRepository;
     private final InformedConsentRepository informedConsentRepository;
+    private final MedicalRecordRepository medicalRecordRepository;
+    private final PatientRepository patientRepository;
+    private final PrescriptionRepository prescriptionRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final EntityManager entityManager;
     private final PasswordEncoder passwordEncoder;
@@ -288,40 +296,147 @@ public class OwnerService {
 
     /**
      * Eliminar propietario (hard delete)
+     * Elimina en cascada todos los pacientes y toda la información relacionada
      */
     @Transactional
     public void deleteOwner(Long id) {
-        log.info("Eliminando propietario con ID: {}", id);
+        log.info("Eliminando propietario con ID: {} y toda su información relacionada", id);
 
         Owner owner = ownerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Propietario no encontrado con ID: " + id));
 
-        // Verificar si tiene pacientes asociados
-        if (!owner.getPatients().isEmpty()) {
-            throw new IllegalStateException("No se puede eliminar el propietario porque tiene " + 
-                owner.getPatients().size() + " paciente(s) asociado(s). " +
-                "Primero debe eliminar o transferir los pacientes.");
+        // Cargar pacientes del propietario
+        List<com.vetclinic.entity.Patient> patients = patientRepository.findByOwnerId(id);
+        
+        if (!patients.isEmpty()) {
+            log.info("El propietario tiene {} paciente(s). Eliminando pacientes y toda su información relacionada...", patients.size());
+            
+            // Para cada paciente, eliminar toda su información relacionada
+            for (com.vetclinic.entity.Patient patient : patients) {
+                try {
+                    log.info("Eliminando información del paciente ID: {} ({})", patient.getId(), patient.getName());
+                    
+                    // 1. Obtener todas las citas del paciente (activas e inactivas) usando consulta personalizada
+                    @SuppressWarnings("unchecked")
+                    List<Appointment> patientAppointments = entityManager.createQuery(
+                        "SELECT a FROM Appointment a WHERE a.patient.id = :patientId")
+                        .setParameter("patientId", patient.getId())
+                        .getResultList();
+                    
+                    // Eliminar tokens de acción de citas relacionadas con las citas del paciente
+                    // Usar consulta nativa para evitar problemas con relaciones lazy
+                    if (!patientAppointments.isEmpty()) {
+                        List<Long> appointmentIds = patientAppointments.stream()
+                            .map(Appointment::getId)
+                            .collect(Collectors.toList());
+                        
+                        if (!appointmentIds.isEmpty()) {
+                            try {
+                                int deletedTokens = entityManager.createNativeQuery(
+                                    "DELETE FROM appointment_action_tokens WHERE appointment_id IN (:appointmentIds)")
+                                    .setParameter("appointmentIds", appointmentIds)
+                                    .executeUpdate();
+                                log.debug("Eliminados {} token(s) de acción para las citas del paciente", deletedTokens);
+                            } catch (Exception e) {
+                                log.warn("Error al eliminar tokens de acción: {}", e.getMessage());
+                            }
+                        }
+                    }
+                    
+                    // 2. Eliminar registros médicos del paciente primero (esto eliminará automáticamente 
+                    //    prescripciones e informed consents relacionados por cascade)
+                    @SuppressWarnings("unchecked")
+                    List<com.vetclinic.entity.MedicalRecord> medicalRecords = entityManager.createQuery(
+                        "SELECT mr FROM MedicalRecord mr WHERE mr.patient.id = :patientId")
+                        .setParameter("patientId", patient.getId())
+                        .getResultList();
+                    if (!medicalRecords.isEmpty()) {
+                        medicalRecordRepository.deleteAll(medicalRecords);
+                        entityManager.flush(); // Asegurar que se eliminen antes de continuar
+                        log.info("Eliminados {} registro(s) médico(s) del paciente (y sus prescripciones/consentimientos relacionados)", medicalRecords.size());
+                    }
+                    
+                    // 3. Eliminar prescripciones restantes del paciente (si hay alguna sin medical record)
+                    @SuppressWarnings("unchecked")
+                    List<com.vetclinic.entity.Prescription> prescriptions = entityManager.createQuery(
+                        "SELECT p FROM Prescription p WHERE p.patient.id = :patientId")
+                        .setParameter("patientId", patient.getId())
+                        .getResultList();
+                    if (!prescriptions.isEmpty()) {
+                        prescriptionRepository.deleteAll(prescriptions);
+                        log.info("Eliminadas {} prescripción(es) restantes del paciente", prescriptions.size());
+                    }
+                    
+                    // 4. Eliminar consentimientos informados restantes del paciente (si hay alguno sin medical record)
+                    @SuppressWarnings("unchecked")
+                    List<com.vetclinic.entity.InformedConsent> patientConsents = entityManager.createQuery(
+                        "SELECT ic FROM InformedConsent ic WHERE ic.patient.id = :patientId")
+                        .setParameter("patientId", patient.getId())
+                        .getResultList();
+                    if (!patientConsents.isEmpty()) {
+                        informedConsentRepository.deleteAll(patientConsents);
+                        log.info("Eliminados {} consentimiento(s) informado(s) restantes del paciente", patientConsents.size());
+                    }
+                    
+                    // 5. Eliminar citas del paciente
+                    if (!patientAppointments.isEmpty()) {
+                        appointmentRepository.deleteAll(patientAppointments);
+                        log.info("Eliminadas {} cita(s) del paciente", patientAppointments.size());
+                    }
+                    
+                    // 6. Eliminar el paciente
+                    patientRepository.delete(patient);
+                    log.info("Paciente ID: {} eliminado exitosamente", patient.getId());
+                } catch (Exception e) {
+                    log.error("Error al eliminar información del paciente ID {}: {}", patient.getId(), e.getMessage(), e);
+                    throw new IllegalStateException("Error al eliminar información del paciente: " + e.getMessage(), e);
+                }
+            }
+            
+            entityManager.flush(); // Asegurar que todo se elimine antes de continuar
+            log.info("Todos los pacientes y su información relacionada han sido eliminados");
         }
 
-        // Eliminar citas asociadas físicamente antes de eliminar el propietario
-        // Buscar todas las citas del propietario (activas e inactivas)
+        // Eliminar citas asociadas directamente al propietario (por si acaso quedan algunas)
         List<Appointment> ownerAppointments = appointmentRepository.findByOwnerIdOrderByScheduledDateDesc(id);
         if (!ownerAppointments.isEmpty()) {
-            log.info("Eliminando físicamente {} cita(s) asociada(s) al propietario", ownerAppointments.size());
-            // Eliminar físicamente las citas para evitar problemas de claves foráneas
-            for (Appointment appointment : ownerAppointments) {
-                appointmentRepository.delete(appointment);
+            log.info("Eliminando {} cita(s) asociada(s) directamente al propietario", ownerAppointments.size());
+            
+            // Eliminar tokens de acción de estas citas usando consulta nativa
+            List<Long> ownerAppointmentIds = ownerAppointments.stream()
+                .map(Appointment::getId)
+                .collect(Collectors.toList());
+            
+            if (!ownerAppointmentIds.isEmpty()) {
+                try {
+                    int deletedTokens = entityManager.createNativeQuery(
+                        "DELETE FROM appointment_action_tokens WHERE appointment_id IN (:appointmentIds)")
+                        .setParameter("appointmentIds", ownerAppointmentIds)
+                        .executeUpdate();
+                    log.debug("Eliminados {} token(s) de acción para las citas del propietario", deletedTokens);
+                } catch (Exception e) {
+                    log.warn("Error al eliminar tokens de acción del propietario: {}", e.getMessage());
+                }
             }
-            entityManager.flush(); // Asegurar que las citas se eliminen antes de continuar
-            log.info("Citas eliminadas físicamente exitosamente");
+            
+            // Eliminar las citas
+            appointmentRepository.deleteAll(ownerAppointments);
+            entityManager.flush();
+            log.info("Citas del propietario eliminadas exitosamente");
         }
 
-        // Verificar si tiene consentimientos informados asociados
-        long consentCount = informedConsentRepository.countByOwnerId(id);
-        if (consentCount > 0) {
-            throw new IllegalStateException("No se puede eliminar el propietario porque tiene " + 
-                consentCount + " consentimiento(s) informado(s) asociado(s). " +
-                "Primero debe eliminar los consentimientos.");
+        // Eliminar consentimientos informados asociados directamente al propietario
+        // (los relacionados con pacientes ya fueron eliminados arriba)
+        @SuppressWarnings("unchecked")
+        List<com.vetclinic.entity.InformedConsent> ownerConsents = entityManager.createQuery(
+            "SELECT ic FROM InformedConsent ic WHERE ic.owner.id = :ownerId")
+            .setParameter("ownerId", id)
+            .getResultList();
+        if (!ownerConsents.isEmpty()) {
+            log.info("Eliminando {} consentimiento(s) informado(s) restantes asociado(s) al propietario", ownerConsents.size());
+            informedConsentRepository.deleteAll(ownerConsents);
+            entityManager.flush();
+            log.info("Consentimientos informados restantes del propietario eliminados exitosamente");
         }
 
         // Eliminar usuario asociado primero

@@ -66,8 +66,8 @@ services:
       start_period: 40s
     networks:
       - vetclinic-network
-    volumes:
-      - ./logs:/app/logs
+    # volumes:
+    #   - ./logs:/app/logs
 
   # Frontend React/Vite
   frontend:

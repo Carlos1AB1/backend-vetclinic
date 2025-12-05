@@ -10,6 +10,6 @@ data:
   SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
   FRONTEND_URL: "https://www.vetclinicpro.app"
   BACKEND_URL: "https://api.vetclinicpro.app"
-  CORS_ORIGINS: "https://www.vetclinicpro.app,https://vetclinicpro.app,http://www.vetclinicpro.app,http://vetclinicpro.app"
+  CORS_ORIGINS: "https://www.vetclinicpro.app,https://vetclinicpro.app,http://www.vetclinicpro.app,http://vetclinicpro.app,https://www.vetclinic.com,https://vetclinic.com"
   CLINIC_NAME: "VetClinic Pro"
 

@@ -77,7 +77,8 @@ public class TwilioSmsAdapter implements SmsServiceAdapter {
 
     /**
      * Format phone number to E.164 format
-     * E.164 format: +[country code][number] (e.g., +1234567890)
+     * E.164 format: +[country code][number] (e.g., +573183487086)
+     * Detects Colombian numbers (10 digits) and adds +57
      */
     private String formatPhoneNumber(String phone) {
         if (phone == null || phone.trim().isEmpty()) {
@@ -87,19 +88,24 @@ public class TwilioSmsAdapter implements SmsServiceAdapter {
         // Remove all non-digit characters except +
         String cleaned = phone.replaceAll("[^\\d+]", "");
         
-        // If it doesn't start with +, assume it's a local number and add +1 (US/Canada)
-        // You may need to adjust this based on your country
-        if (!cleaned.startsWith("+")) {
-            // If it starts with 1, add +
-            if (cleaned.startsWith("1") && cleaned.length() == 11) {
-                cleaned = "+" + cleaned;
-            } else if (cleaned.length() == 10) {
-                // Assume US number, add +1
-                cleaned = "+1" + cleaned;
-            } else {
-                // Try to add + if missing
-                cleaned = "+" + cleaned;
-            }
+        // If it already starts with +, return as is
+        if (cleaned.startsWith("+")) {
+            return cleaned;
+        }
+        
+        // Detect Colombian numbers: 10 digits (cellphones start with 3, landlines with other digits)
+        if (cleaned.length() == 10) {
+            // Colombian numbers: add +57
+            cleaned = "+57" + cleaned;
+        } else if (cleaned.startsWith("57") && cleaned.length() == 12) {
+            // Already has country code 57 but missing +
+            cleaned = "+" + cleaned;
+        } else if (cleaned.startsWith("1") && cleaned.length() == 11) {
+            // US/Canada number starting with 1 (11 digits total)
+            cleaned = "+" + cleaned;
+        } else {
+            // For other cases, try to add + if missing
+            cleaned = "+" + cleaned;
         }
         
         return cleaned;
